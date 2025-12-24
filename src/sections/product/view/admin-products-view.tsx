@@ -32,8 +32,6 @@ import { apiService } from 'src/services/api';
 import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
 
-// ----------------------------------------------------------------------
-
 interface ProductFormData {
   title: string;
   price: number;
