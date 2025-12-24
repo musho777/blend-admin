@@ -21,6 +21,7 @@ export interface Product {
   isBestSeller?: boolean;
   isBestSelect?: boolean;
   priority?: number;
+  imageUrls?: string[];
 }
 
 export interface Category {
@@ -94,12 +95,9 @@ class ApiService {
     localStorage.removeItem('auth_token');
   }
 
-  private async request<T>(
-    endpoint: string,
-    options: RequestInit = {}
-  ): Promise<T> {
+  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
-    
+
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
       ...options.headers,
@@ -134,7 +132,7 @@ class ApiService {
       method: 'POST',
       body: JSON.stringify(credentials),
     });
-    
+
     console.log('API Service: Login response received:', response);
     this.setToken(response.accessToken);
     console.log('API Service: Token set:', response.accessToken);
@@ -172,24 +170,66 @@ class ApiService {
     return this.request<Product>(`/products/${id}`);
   }
 
-  async createProduct(data: Omit<Product, 'id'>): Promise<Product> {
-    return this.request<Product>('/products', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  }
-
-  async updateProduct(id: string, data: Partial<Omit<Product, 'id'>>): Promise<Product> {
-    return this.request<Product>(`/products/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  }
-
   async deleteProduct(id: string): Promise<{ message: string }> {
     return this.request<{ message: string }>(`/products/${id}`, {
       method: 'DELETE',
     });
+  }
+
+  async createProductWithImages(formData: FormData): Promise<Product> {
+    const url = `${API_BASE_URL}/products`;
+
+    const headers: HeadersInit = {};
+
+    if (this.token) {
+      (headers as Record<string, string>).Authorization = `Bearer ${this.token}`;
+    }
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('API request failed:', error);
+      throw error;
+    }
+  }
+
+  async updateProductWithImages(id: string, formData: FormData): Promise<Product> {
+    const url = `${API_BASE_URL}/products/${id}`;
+
+    const headers: HeadersInit = {};
+
+    if (this.token) {
+      (headers as Record<string, string>).Authorization = `Bearer ${this.token}`;
+    }
+
+    try {
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers,
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('API request failed:', error);
+      throw error;
+    }
   }
 
   // Categories
@@ -222,11 +262,7 @@ class ApiService {
   }
 
   // Orders
-  async getOrders(params?: {
-    status?: string;
-    page?: number;
-    limit?: number;
-  }): Promise<{
+  async getOrders(params?: { status?: string; page?: number; limit?: number }): Promise<{
     orders: Order[];
     pagination: {
       page: number;
@@ -239,10 +275,10 @@ class ApiService {
     if (params?.status) searchParams.append('status', params.status);
     if (params?.page) searchParams.append('page', params.page.toString());
     if (params?.limit) searchParams.append('limit', params.limit.toString());
-    
+
     const query = searchParams.toString();
     const endpoint = `/orders${query ? `?${query}` : ''}`;
-    
+
     return this.request(endpoint);
   }
 

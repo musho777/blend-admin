@@ -1,6 +1,8 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { useState, useEffect, useContext, createContext } from 'react';
 
-import { apiService, LoginCredentials } from '../services/api';
+import { apiService } from '../services/api';
+
+import type { LoginCredentials } from '../services/api';
 
 interface User {
   id: string;

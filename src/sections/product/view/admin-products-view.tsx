@@ -43,6 +43,8 @@ interface ProductFormData {
   isBestSeller?: boolean;
   isBestSelect?: boolean;
   priority?: number;
+  image?: File[];
+  existingImages?: string[];
 }
 
 export function AdminProductsView() {
@@ -61,6 +63,8 @@ export function AdminProductsView() {
     isBestSeller: false,
     isBestSelect: false,
     priority: 0,
+    image: [],
+    existingImages: [],
   });
   const [submitting, setSubmitting] = useState(false);
 
@@ -97,6 +101,8 @@ export function AdminProductsView() {
         isBestSeller: product.isBestSeller || false,
         isBestSelect: product.isBestSelect || false,
         priority: product.priority || 0,
+        image: [],
+        existingImages: product.imageUrls || [],
       });
     } else {
       setEditingProduct(null);
@@ -109,6 +115,8 @@ export function AdminProductsView() {
         isBestSeller: false,
         isBestSelect: false,
         priority: 0,
+        image: [],
+        existingImages: [],
       });
     }
     setOpenDialog(true);
@@ -126,17 +134,67 @@ export function AdminProductsView() {
       isBestSeller: false,
       isBestSelect: false,
       priority: 0,
+      image: [],
+      existingImages: [],
     });
+  };
+
+  const handleImageUpload = (files: FileList | null) => {
+    if (!files) return;
+
+    const selectedFiles = Array.from(files);
+    const currentImages = formData.image || [];
+    const existingImages = formData.existingImages || [];
+    const totalImages = currentImages.length + existingImages.length + selectedFiles.length;
+
+    if (totalImages > 5) {
+      setError('Maximum 5 images allowed');
+      return;
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      image: [...currentImages, ...selectedFiles],
+    }));
+    setError('');
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      image: prev.image?.filter((_, i) => i !== index) || [],
+    }));
+  };
+
+  const handleRemoveExistingImage = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      existingImages: prev.existingImages?.filter((_, i) => i !== index) || [],
+    }));
   };
 
   const handleSubmit = async () => {
     try {
       setSubmitting(true);
 
+      const formDataToSend = new FormData();
+      formDataToSend.append('title', formData.title);
+      formDataToSend.append('price', Math.max(0, formData.price).toString());
+      formDataToSend.append('stock', Math.max(0, formData.stock).toString());
+      formDataToSend.append('categoryId', formData.categoryId);
+      formDataToSend.append('isFeatured', formData.isFeatured ? 'true' : 'false');
+      formDataToSend.append('isBestSeller', formData.isBestSeller ? 'true' : 'false');
+      formDataToSend.append('isBestSelect', formData.isBestSelect ? 'true' : 'false');
+      formDataToSend.append('priority', Math.max(0, formData.priority || 0).toString());
+
+      formData.image?.forEach((file) => {
+        formDataToSend.append('images', file);
+      });
+
       if (editingProduct) {
-        await apiService.updateProduct(editingProduct.id, formData);
+        await apiService.updateProductWithImages(editingProduct.id, formDataToSend);
       } else {
-        await apiService.createProduct(formData);
+        await apiService.createProductWithImages(formDataToSend);
       }
 
       await fetchData();
@@ -283,22 +341,28 @@ export function AdminProductsView() {
                 label="Price"
                 type="number"
                 value={formData.price}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, price: Number(e.target.value) }))
-                }
+                onChange={(e) => {
+                  const value = parseFloat(e.target.value) || 0;
+                  setFormData((prev) => ({ ...prev, price: Math.max(0, value) }));
+                }}
                 required
                 inputProps={{ min: 0, step: 0.01 }}
+                error={formData.price < 0 || isNaN(formData.price)}
+                helperText={formData.price < 0 ? 'Price must be 0 or greater' : ''}
               />
               <TextField
                 fullWidth
                 label="Stock"
                 type="number"
                 value={formData.stock}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, stock: Number(e.target.value) }))
-                }
+                onChange={(e) => {
+                  const value = parseInt(e.target.value, 10) || 0;
+                  setFormData((prev) => ({ ...prev, stock: Math.max(0, value) }));
+                }}
                 required
                 inputProps={{ min: 0 }}
+                error={formData.stock < 0 || isNaN(formData.stock)}
+                helperText={formData.stock < 0 ? 'Stock must be 0 or greater' : ''}
               />
             </Box>
 
@@ -362,12 +426,168 @@ export function AdminProductsView() {
               label="Priority"
               type="number"
               value={formData.priority}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, priority: Number(e.target.value) }))
-              }
+              onChange={(e) => {
+                const value = parseInt(e.target.value, 10) || 0;
+                setFormData((prev) => ({ ...prev, priority: Math.max(0, value) }));
+              }}
               helperText="Higher priority products appear first (0 = no priority)"
               inputProps={{ min: 0 }}
+              error={(formData.priority || 0) < 0 || isNaN(formData.priority || 0)}
             />
+
+            <Box>
+              <Typography variant="subtitle2" sx={{ mb: 2 }}>
+                Product Images (Max 5)
+              </Typography>
+              <Button
+                variant="outlined"
+                component="label"
+                startIcon={<Iconify icon="mingcute:add-line" />}
+                disabled={
+                  (formData.image?.length || 0) + (formData.existingImages?.length || 0) >= 5
+                }
+                sx={{ mb: 2 }}
+              >
+                Upload Images
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  hidden
+                  onChange={(e) => handleImageUpload(e.target.files)}
+                />
+              </Button>
+
+              {((formData?.existingImages && formData?.existingImages?.length > 0) ||
+                (formData.image && formData.image?.length > 0)) && (
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                  {/* Existing Images */}
+                  {formData.existingImages?.map((imageUrl, index) => (
+                    <Box
+                      key={`existing-${index}`}
+                      sx={{
+                        position: 'relative',
+                        border: '1px solid #e0e0e0',
+                        borderRadius: 1,
+                        overflow: 'hidden',
+                        width: 120,
+                        height: 120,
+                      }}
+                    >
+                      <Box
+                        component="img"
+                        src={`http://localhost:3000${imageUrl}`}
+                        alt={`Existing ${index + 1}`}
+                        sx={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                        }}
+                      />
+                      <IconButton
+                        size="small"
+                        onClick={() => handleRemoveExistingImage(index)}
+                        sx={{
+                          position: 'absolute',
+                          top: 4,
+                          right: 4,
+                          bgcolor: 'rgba(255, 255, 255, 0.8)',
+                          '&:hover': {
+                            bgcolor: 'rgba(255, 255, 255, 0.9)',
+                          },
+                        }}
+                      >
+                        <Iconify icon="mingcute:close-line" width={16} />
+                      </IconButton>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          position: 'absolute',
+                          bottom: 4,
+                          left: 4,
+                          bgcolor: 'rgba(0, 0, 0, 0.6)',
+                          color: 'white',
+                          px: 1,
+                          borderRadius: 0.5,
+                          fontSize: '0.65rem',
+                          maxWidth: '100px',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        Uploaded
+                      </Typography>
+                    </Box>
+                  ))}
+
+                  {/* New Images */}
+                  {formData.image?.map((file, index) => (
+                    <Box
+                      key={`new-${index}`}
+                      sx={{
+                        position: 'relative',
+                        border: '1px solid #e0e0e0',
+                        borderRadius: 1,
+                        overflow: 'hidden',
+                        width: 120,
+                        height: 120,
+                      }}
+                    >
+                      <Box
+                        component="img"
+                        src={URL.createObjectURL(file)}
+                        alt={`Preview ${index + 1}`}
+                        sx={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                        }}
+                      />
+                      <IconButton
+                        size="small"
+                        onClick={() => handleRemoveImage(index)}
+                        sx={{
+                          position: 'absolute',
+                          top: 4,
+                          right: 4,
+                          bgcolor: 'rgba(255, 255, 255, 0.8)',
+                          '&:hover': {
+                            bgcolor: 'rgba(255, 255, 255, 0.9)',
+                          },
+                        }}
+                      >
+                        <Iconify icon="mingcute:close-line" width={16} />
+                      </IconButton>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          position: 'absolute',
+                          bottom: 4,
+                          left: 4,
+                          bgcolor: 'rgba(0, 0, 0, 0.6)',
+                          color: 'white',
+                          px: 1,
+                          borderRadius: 0.5,
+                          fontSize: '0.65rem',
+                          maxWidth: '100px',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {file.name}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Box>
+              )}
+
+              <Typography variant="caption" color="textSecondary">
+                {(formData.image?.length || 0) + (formData.existingImages?.length || 0)} / 5 images
+                selected
+              </Typography>
+            </Box>
           </Box>
         </DialogContent>
         <DialogActions>
@@ -375,7 +595,16 @@ export function AdminProductsView() {
           <Button
             onClick={handleSubmit}
             variant="contained"
-            disabled={submitting || !formData.title || !formData.categoryId || formData.price <= 0}
+            disabled={
+              submitting ||
+              !formData.title.trim() ||
+              !formData.categoryId ||
+              formData.price < 0 ||
+              formData.stock < 0 ||
+              isNaN(formData.price) ||
+              isNaN(formData.stock) ||
+              isNaN(formData.priority || 0)
+            }
             startIcon={submitting ? <CircularProgress size={20} /> : null}
           >
             {submitting ? 'Saving...' : editingProduct ? 'Update' : 'Create'}
