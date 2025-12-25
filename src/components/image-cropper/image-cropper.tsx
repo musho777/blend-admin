@@ -104,9 +104,9 @@ export function ImageCropper({
     }
 
     setError('');
-    const crop = getInitialCrop(width, height);
-    setCrop(crop);
-    setCompletedCrop(crop);
+    const crops = getInitialCrop(width, height);
+    setCrop(crops);
+    setCompletedCrop(crops);
   }, []);
 
   const handleCropComplete = async () => {
