@@ -15,6 +15,7 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import InputLabel from '@mui/material/InputLabel';
+import Pagination from '@mui/material/Pagination';
 import DialogTitle from '@mui/material/DialogTitle';
 import FormControl from '@mui/material/FormControl';
 import ToggleButton from '@mui/material/ToggleButton';
@@ -46,6 +47,15 @@ interface ProductFormData {
   imagesToRemove?: string[];
 }
 
+interface PaginationMeta {
+  currentPage: number;
+  itemsPerPage: number;
+  totalItems: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
 export function AdminProductsView() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -54,6 +64,9 @@ export function AdminProductsView() {
   const [openDialog, setOpenDialog] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [paginationMeta, setPaginationMeta] = useState<PaginationMeta | null>(null);
   const [formData, setFormData] = useState<ProductFormData>({
     title: '',
     price: 0,
@@ -71,26 +84,41 @@ export function AdminProductsView() {
   const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
-  const fetchData = useCallback(async () => {
+  const fetchProducts = useCallback(
+    async (page?: number, limit?: number) => {
+      try {
+        setLoading(true);
+        const pageToUse = page ?? currentPage;
+        const limitToUse = limit ?? itemsPerPage;
+        const productsResponse = await apiService.getProducts({
+          page: pageToUse,
+          limit: limitToUse,
+        });
+        setProducts(productsResponse.data);
+        setPaginationMeta(productsResponse.meta);
+        setError('');
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch products');
+      } finally {
+        setLoading(false);
+      }
+    },
+    [currentPage, itemsPerPage]
+  );
+
+  const fetchCategories = useCallback(async () => {
     try {
-      setLoading(true);
-      const [productsData, categoriesData] = await Promise.all([
-        apiService.getProducts(),
-        apiService.getCategories(),
-      ]);
-      setProducts(productsData);
+      const categoriesData = await apiService.getCategories();
       setCategories(categoriesData);
-      setError('');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch data');
-    } finally {
-      setLoading(false);
+      setError(err instanceof Error ? err.message : 'Failed to fetch categories');
     }
   }, []);
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    fetchProducts();
+    fetchCategories();
+  }, [fetchProducts, fetchCategories]);
 
   const handleOpenDialog = (product?: Product) => {
     if (product) {
@@ -242,7 +270,7 @@ export function AdminProductsView() {
         await apiService.createProductWithImages(formDataToSend);
       }
 
-      await fetchData();
+      await fetchProducts();
       handleCloseDialog();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save product');
@@ -255,7 +283,7 @@ export function AdminProductsView() {
     if (window.confirm('Are you sure you want to delete this product?')) {
       try {
         await apiService.deleteProduct(id);
-        await fetchData();
+        await fetchProducts();
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to delete product');
       }
@@ -293,6 +321,19 @@ export function AdminProductsView() {
       setViewMode(newViewMode);
     }
   };
+
+  const handlePageChange = useCallback((page: number) => {
+    setCurrentPage(page);
+  }, []);
+
+  const handlePageSizeChange = useCallback((pageSize: number) => {
+    setItemsPerPage(pageSize);
+    setCurrentPage(1);
+  }, []);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [currentPage, itemsPerPage, fetchProducts]);
 
   const tableColumns: TableColumn[] = [
     {
@@ -363,10 +404,10 @@ export function AdminProductsView() {
             size="small"
           >
             <ToggleButton value="table" aria-label="table view">
-              <Iconify icon="solar:list-bold" />
+              <Iconify icon="solar:hamburger-menu-bold" />
             </ToggleButton>
             <ToggleButton value="card" aria-label="card view">
-              <Iconify icon="solar:widget-4-bold" />
+              <Iconify icon="solar:widget-6-bold" />
             </ToggleButton>
           </ToggleButtonGroup>
 
@@ -388,13 +429,54 @@ export function AdminProductsView() {
       )}
 
       {viewMode === 'table' ? (
-        <DataTable
-          columns={tableColumns}
-          data={products}
-          loading={loading}
-          emptyMessage="No products found"
-          minWidth={1200}
-        />
+        <>
+          <DataTable
+            columns={tableColumns}
+            data={products}
+            loading={loading}
+            emptyMessage="No products found"
+            minWidth={1200}
+          />
+          {/* Pagination for table view */}
+          {paginationMeta && paginationMeta.totalPages > 1 && (
+            <Box
+              sx={{
+                mt: 3,
+                display: 'flex',
+                justifyContent: 'flex-end',
+                alignItems: 'center',
+                mb: 2,
+                gap: 2,
+              }}
+            >
+              <Typography variant="body2" color="textSecondary">
+                Showing {(currentPage - 1) * itemsPerPage + 1} to{' '}
+                {Math.min(currentPage * itemsPerPage, paginationMeta.totalItems)} of{' '}
+                {paginationMeta.totalItems} items
+              </Typography>
+              <Pagination
+                count={paginationMeta.totalPages}
+                page={currentPage}
+                onChange={(_, page) => handlePageChange(page)}
+                showFirstButton
+                showLastButton
+                size="large"
+              />
+              <FormControl size="small" sx={{ minWidth: 80 }}>
+                <Select
+                  value={itemsPerPage}
+                  onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                  displayEmpty
+                >
+                  <MenuItem value={5}>5</MenuItem>
+                  <MenuItem value={10}>10</MenuItem>
+                  <MenuItem value={25}>25</MenuItem>
+                  <MenuItem value={50}>50</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+          )}
+        </>
       ) : (
         <Grid container spacing={3}>
           {loading ? (
@@ -423,7 +505,6 @@ export function AdminProductsView() {
                   color: 'text.secondary',
                 }}
               >
-                <Iconify icon="solar:box-bold" sx={{ fontSize: 64, mb: 2, opacity: 0.3 }} />
                 <Typography variant="h6">No products found</Typography>
                 <Typography variant="body2">Start by adding your first product</Typography>
               </Box>
@@ -436,6 +517,44 @@ export function AdminProductsView() {
             ))
           )}
         </Grid>
+      )}
+
+      {/* Pagination for card view */}
+      {viewMode === 'card' && paginationMeta && paginationMeta.totalPages > 1 && (
+        <Box
+          sx={{
+            mt: 4,
+            mb: 2,
+            display: 'flex',
+            justifyContent: 'flex-end',
+            alignItems: 'center',
+            gap: 2,
+          }}
+        >
+          <Typography variant="body2" color="textSecondary">
+            {paginationMeta.totalItems} items total
+          </Typography>
+          <Pagination
+            count={paginationMeta.totalPages}
+            page={currentPage}
+            onChange={(_, page) => handlePageChange(page)}
+            showFirstButton
+            showLastButton
+            size="large"
+          />
+          <FormControl size="small" sx={{ minWidth: 80 }}>
+            <Select
+              value={itemsPerPage}
+              onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+              displayEmpty
+            >
+              <MenuItem value={5}>5</MenuItem>
+              <MenuItem value={10}>10</MenuItem>
+              <MenuItem value={25}>25</MenuItem>
+              <MenuItem value={50}>50</MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
       )}
 
       <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>

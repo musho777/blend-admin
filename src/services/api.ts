@@ -162,8 +162,25 @@ class ApiService {
   }
 
   // Products
-  async getProducts(): Promise<Product[]> {
-    return this.request<Product[]>('/products');
+  async getProducts(params?: { page?: number; limit?: number }): Promise<{
+    data: Product[];
+    meta: {
+      currentPage: number;
+      itemsPerPage: number;
+      totalItems: number;
+      totalPages: number;
+      hasNextPage: boolean;
+      hasPreviousPage: boolean;
+    };
+  }> {
+    const searchParams = new URLSearchParams();
+    if (params?.page) searchParams.append('page', params.page.toString());
+    if (params?.limit) searchParams.append('limit', params.limit.toString());
+
+    const query = searchParams.toString();
+    const endpoint = `/products${query ? `?${query}` : ''}`;
+
+    return this.request(endpoint);
   }
 
   async getProduct(id: string): Promise<Product> {

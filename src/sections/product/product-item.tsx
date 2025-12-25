@@ -157,16 +157,11 @@ export function ProductItem({ product }: { product: ProductItemProps }) {
               },
             }}
           >
-            <Iconify icon="solar:cart-plus-bold" />
+            <Iconify icon="solar:cart-3-bold" />
           </IconButton>
         </Tooltip>
 
         <Box sx={{ display: 'flex', gap: 0.5 }}>
-          <Tooltip title="Add to wishlist">
-            <IconButton size="small">
-              <Iconify icon="solar:heart-linear" />
-            </IconButton>
-          </Tooltip>
           <Tooltip title="Quick view">
             <IconButton size="small" onClick={handleQuickView}>
               <Iconify icon="solar:eye-bold" />

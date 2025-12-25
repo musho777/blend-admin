@@ -3,7 +3,6 @@ import { useState } from 'react';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
-import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
@@ -133,7 +132,7 @@ export function ProductQuickViewDialog({ open, product, onClose }: ProductQuickV
                       },
                     }}
                   >
-                    <Iconify icon="eva:arrow-ios-back-fill" />
+                    <Iconify icon="solar:alt-arrow-left-bold" />
                   </IconButton>
                   <IconButton
                     onClick={handleNextImage}
@@ -148,7 +147,7 @@ export function ProductQuickViewDialog({ open, product, onClose }: ProductQuickV
                       },
                     }}
                   >
-                    <Iconify icon="eva:arrow-ios-forward-fill" />
+                    <Iconify icon="solar:alt-arrow-right-bold" />
                   </IconButton>
                 </>
               )}
@@ -289,26 +288,6 @@ export function ProductQuickViewDialog({ open, product, onClose }: ProductQuickV
               )}
 
               <Divider />
-
-              <Stack direction="row" spacing={2}>
-                <Button
-                  variant="contained"
-                  size="large"
-                  startIcon={<Iconify icon="solar:cart-plus-bold" />}
-                  sx={{ flex: 1 }}
-                >
-                  Add to Cart
-                </Button>
-                <IconButton
-                  size="large"
-                  sx={{
-                    border: '1px solid',
-                    borderColor: 'divider',
-                  }}
-                >
-                  <Iconify icon="solar:heart-linear" />
-                </IconButton>
-              </Stack>
             </Stack>
           </Box>
         </Box>

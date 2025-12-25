@@ -79,7 +79,7 @@ export const _products = [...Array(24)].map((_, index) => {
 
   // Generate multiple images for the product (2-4 images per product)
   const imageCount = Math.min(2 + (setIndex % 3), 4);
-  const images = Array.from({ length: imageCount }, (_, imgIndex) => {
+  const images = Array.from({ length: imageCount }, (__, imgIndex) => {
     const imageNum = ((setIndex + imgIndex - 1) % 24) + 1;
     return `/assets/images/product/product-${imageNum}.webp`;
   });
