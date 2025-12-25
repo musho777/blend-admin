@@ -29,6 +29,7 @@ import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
 import { apiService } from 'src/services/api';
 
 import { Iconify } from 'src/components/iconify';
+import { ImageCropper } from 'src/components/image-cropper';
 import { RichTextEditor } from 'src/components/rich-text-editor';
 import { DataTable, type TableColumn } from 'src/components/table';
 
@@ -86,6 +87,8 @@ export function AdminProductsView() {
   const [submitting, setSubmitting] = useState(false);
   const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [cropperOpen, setCropperOpen] = useState(false);
+  const [imageToProcess, setImageToProcess] = useState<{ file: File; src: string } | null>(null);
 
   const fetchProducts = useCallback(
     async (page?: number, limit?: number) => {
@@ -214,18 +217,37 @@ export function AdminProductsView() {
     const selectedFiles = Array.from(files);
     const currentImages = formData.image || [];
     const existingImages = formData.existingImages || [];
-    const totalImages = currentImages.length + existingImages.length + selectedFiles.length;
 
-    if (totalImages > 5) {
+    if (selectedFiles.length + currentImages.length + existingImages.length > 5) {
       setError('Maximum 5 images allowed');
       return;
     }
 
+    if (selectedFiles.length > 0) {
+      const file = selectedFiles[0];
+      const src = URL.createObjectURL(file);
+      setImageToProcess({ file, src });
+      setCropperOpen(true);
+    }
+    setError('');
+  };
+
+  const handleCropComplete = (croppedFile: File) => {
+    const currentImages = formData.image || [];
     setFormData((prev) => ({
       ...prev,
-      image: [...currentImages, ...selectedFiles],
+      image: [...currentImages, croppedFile],
     }));
-    setError('');
+    setCropperOpen(false);
+    setImageToProcess(null);
+  };
+
+  const handleCropperClose = () => {
+    setCropperOpen(false);
+    if (imageToProcess) {
+      URL.revokeObjectURL(imageToProcess.src);
+    }
+    setImageToProcess(null);
   };
 
   const handleRemoveImage = (index: number) => {
@@ -710,11 +732,10 @@ export function AdminProductsView() {
                 }
                 sx={{ mb: 2 }}
               >
-                Upload Images
+                Upload Image
                 <input
                   type="file"
                   accept="image/*"
-                  multiple
                   hidden
                   onChange={(e) => handleImageUpload(e.target.files)}
                 />
@@ -906,6 +927,16 @@ export function AdminProductsView() {
           </MenuItem>
         </MenuList>
       </Popover>
+
+      {imageToProcess && (
+        <ImageCropper
+          open={cropperOpen}
+          onClose={handleCropperClose}
+          onCropComplete={handleCropComplete}
+          imageSrc={imageToProcess.src}
+          fileName={imageToProcess.file.name}
+        />
+      )}
     </div>
   );
 }

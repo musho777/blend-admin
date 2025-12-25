@@ -108,11 +108,12 @@ export function ProductItem({ product }: { product: ProductItemProps }) {
         {product.status && renderStatus}
         <CardMedia
           component="img"
-          height="240"
+          height="300"
           image={product.coverUrl}
           alt={product.name}
           sx={{
             objectFit: 'cover',
+            aspectRatio: '1/1',
             transition: 'transform 0.3s ease-in-out',
             '&:hover': {
               transform: 'scale(1.05)',
