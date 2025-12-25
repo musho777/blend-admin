@@ -3,8 +3,6 @@ import type { Product, Category } from 'src/services/api';
 import { useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
-import Card from '@mui/material/Card';
-import Table from '@mui/material/Table';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
@@ -12,11 +10,7 @@ import Select from '@mui/material/Select';
 import Switch from '@mui/material/Switch';
 import Popover from '@mui/material/Popover';
 import MenuList from '@mui/material/MenuList';
-import TableRow from '@mui/material/TableRow';
 import TextField from '@mui/material/TextField';
-import TableBody from '@mui/material/TableBody';
-import TableHead from '@mui/material/TableHead';
-import TableCell from '@mui/material/TableCell';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import InputLabel from '@mui/material/InputLabel';
@@ -24,7 +18,6 @@ import DialogTitle from '@mui/material/DialogTitle';
 import FormControl from '@mui/material/FormControl';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
-import TableContainer from '@mui/material/TableContainer';
 import CircularProgress from '@mui/material/CircularProgress';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
@@ -32,7 +25,7 @@ import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
 import { apiService } from 'src/services/api';
 
 import { Iconify } from 'src/components/iconify';
-import { Scrollbar } from 'src/components/scrollbar';
+import { DataTable, type TableColumn } from 'src/components/table';
 
 interface ProductFormData {
   title: string;
@@ -268,6 +261,59 @@ export function AdminProductsView() {
     return category ? category.title : 'Unknown';
   };
 
+  const tableColumns: TableColumn[] = [
+    {
+      key: 'title',
+      label: 'Title',
+      render: (value) => <Typography variant="subtitle2">{value}</Typography>,
+    },
+    {
+      key: 'categoryId',
+      label: 'Category',
+      render: (value) => <Typography variant="body2">{getCategoryName(value)}</Typography>,
+    },
+    {
+      key: 'price',
+      label: 'Price',
+      render: (value) => <Typography variant="body2">${value.toFixed(2)}</Typography>,
+    },
+    {
+      key: 'stock',
+      label: 'Stock',
+      render: (value) => <Typography variant="body2">{value}</Typography>,
+    },
+    {
+      key: 'isFeatured',
+      label: 'Featured',
+      render: (value) => <Typography variant="body2">{value ? '✓' : '—'}</Typography>,
+    },
+    {
+      key: 'isBestSeller',
+      label: 'Best Seller',
+      render: (value) => <Typography variant="body2">{value ? '✓' : '—'}</Typography>,
+    },
+    {
+      key: 'isBestSelect',
+      label: 'Best Select',
+      render: (value) => <Typography variant="body2">{value ? '✓' : '—'}</Typography>,
+    },
+    {
+      key: 'priority',
+      label: 'Priority',
+      render: (value) => <Typography variant="body2">{value || 0}</Typography>,
+    },
+    {
+      key: 'actions',
+      label: 'Actions',
+      align: 'right' as const,
+      render: (_, row) => (
+        <IconButton onClick={(event) => handleOpenPopover(event, row)}>
+          <Iconify icon="eva:more-vertical-fill" />
+        </IconButton>
+      ),
+    },
+  ];
+
   return (
     <div>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 5 }}>
@@ -290,78 +336,13 @@ export function AdminProductsView() {
         </Alert>
       )}
 
-      <Card>
-        <Scrollbar>
-          <TableContainer sx={{ overflow: 'unset' }}>
-            <Table sx={{ minWidth: 1200 }}>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Title</TableCell>
-                  <TableCell>Category</TableCell>
-                  <TableCell>Price</TableCell>
-                  <TableCell>Stock</TableCell>
-                  <TableCell>Featured</TableCell>
-                  <TableCell>Best Seller</TableCell>
-                  <TableCell>Best Select</TableCell>
-                  <TableCell>Priority</TableCell>
-                  <TableCell align="right">Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={9} align="center">
-                      <CircularProgress />
-                    </TableCell>
-                  </TableRow>
-                ) : products.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={9} align="center">
-                      No products found
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  products.map((product) => (
-                    <TableRow key={product.id} hover>
-                      <TableCell>
-                        <Typography variant="subtitle2">{product.title}</Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2">
-                          {getCategoryName(product.categoryId)}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2">${product.price.toFixed(2)}</Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2">{product.stock}</Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2">{product.isFeatured ? '✓' : '—'}</Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2">{product.isBestSeller ? '✓' : '—'}</Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2">{product.isBestSelect ? '✓' : '—'}</Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2">{product.priority || 0}</Typography>
-                      </TableCell>
-                      <TableCell align="right">
-                        <IconButton onClick={(event) => handleOpenPopover(event, product)}>
-                          <Iconify icon="eva:more-vertical-fill" />
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Scrollbar>
-      </Card>
+      <DataTable
+        columns={tableColumns}
+        data={products}
+        loading={loading}
+        emptyMessage="No products found"
+        minWidth={1200}
+      />
 
       <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
         <DialogTitle>{editingProduct ? 'Edit Product' : 'Add New Product'}</DialogTitle>
