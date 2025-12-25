@@ -20,16 +20,16 @@ interface ImageCropperProps {
   fileName: string;
 }
 
-const CROP_SIZE = 600;
+const CROP_SIZE = 300;
 const ASPECT_RATIO = 1;
 
 function getInitialCrop(mediaWidth: number, mediaHeight: number) {
   return {
-    unit: '%' as const,
+    unit: 'px' as const,
     x: 10,
     y: 10,
-    width: 80,
-    height: 80,
+    width: CROP_SIZE,
+    height: CROP_SIZE,
   };
 }
 
@@ -51,9 +51,8 @@ function getCroppedImg(image: HTMLImageElement, crop: Crop): Promise<Blob> {
     height: crop.height * scaleY,
   };
 
-  const aspectRatio = pixelCrop.width / pixelCrop.height;
   canvas.width = CROP_SIZE;
-  canvas.height = CROP_SIZE / aspectRatio;
+  canvas.height = CROP_SIZE;
 
   ctx.imageSmoothingQuality = 'high';
 
@@ -65,8 +64,8 @@ function getCroppedImg(image: HTMLImageElement, crop: Crop): Promise<Blob> {
     pixelCrop.height,
     0,
     0,
-    canvas.width,
-    canvas.height
+    CROP_SIZE,
+    CROP_SIZE
   );
 
   return new Promise((resolve) => {
@@ -98,8 +97,8 @@ export function ImageCropper({
   const onImageLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
     const { naturalWidth: width, naturalHeight: height } = e.currentTarget;
 
-    if (width < CROP_SIZE || height < 100) {
-      setError(`Image too small. Minimum width: ${CROP_SIZE}px`);
+    if (width < CROP_SIZE || height < CROP_SIZE) {
+      setError(`Image too small. Minimum dimensions: 100x100px`);
       return;
     }
 
@@ -176,7 +175,7 @@ export function ImageCropper({
           </Box>
 
           <Typography variant="caption" color="textSecondary">
-            Final image will be {CROP_SIZE}px wide
+            Final image will be CROP_SIZExCROP_SIZE pixels
           </Typography>
         </Box>
       </DialogContent>
