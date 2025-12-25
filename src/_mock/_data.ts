@@ -77,12 +77,20 @@ const COLORS = [
 export const _products = [...Array(24)].map((_, index) => {
   const setIndex = index + 1;
 
+  // Generate multiple images for the product (2-4 images per product)
+  const imageCount = Math.min(2 + (setIndex % 3), 4);
+  const images = Array.from({ length: imageCount }, (_, imgIndex) => {
+    const imageNum = ((setIndex + imgIndex - 1) % 24) + 1;
+    return `/assets/images/product/product-${imageNum}.webp`;
+  });
+
   return {
     id: _id(index),
     price: _price(index),
     name: _productNames(index),
     priceSale: setIndex % 3 ? null : _price(index),
     coverUrl: `/assets/images/product/product-${setIndex}.webp`,
+    images,
     colors:
       (setIndex === 1 && COLORS.slice(0, 2)) ||
       (setIndex === 2 && COLORS.slice(1, 3)) ||
@@ -93,6 +101,9 @@ export const _products = [...Array(24)].map((_, index) => {
       COLORS,
     status:
       ([1, 3, 5].includes(setIndex) && 'sale') || ([4, 8, 12].includes(setIndex) && 'new') || '',
+    description: `Premium quality ${_productNames(index)} crafted with attention to detail. Perfect for modern lifestyle with exceptional comfort and durability. Features innovative design elements that combine style and functionality.`,
+    stock: Math.floor(Math.random() * 100) + 10,
+    category: ['Electronics', 'Fashion', 'Home & Garden', 'Sports', 'Books'][setIndex % 5],
   };
 });
 

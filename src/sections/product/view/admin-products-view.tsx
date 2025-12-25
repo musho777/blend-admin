@@ -3,6 +3,7 @@ import type { Product, Category } from 'src/services/api';
 import { useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
+import Grid from '@mui/material/Grid';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
@@ -16,16 +17,20 @@ import IconButton from '@mui/material/IconButton';
 import InputLabel from '@mui/material/InputLabel';
 import DialogTitle from '@mui/material/DialogTitle';
 import FormControl from '@mui/material/FormControl';
+import ToggleButton from '@mui/material/ToggleButton';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import CircularProgress from '@mui/material/CircularProgress';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
 
 import { apiService } from 'src/services/api';
 
 import { Iconify } from 'src/components/iconify';
 import { DataTable, type TableColumn } from 'src/components/table';
+
+import { ProductItem } from '../product-item';
 
 interface ProductFormData {
   title: string;
@@ -48,6 +53,7 @@ export function AdminProductsView() {
   const [error, setError] = useState('');
   const [openDialog, setOpenDialog] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
   const [formData, setFormData] = useState<ProductFormData>({
     title: '',
     price: 0,
@@ -261,6 +267,33 @@ export function AdminProductsView() {
     return category ? category.title : 'Unknown';
   };
 
+  const convertToProductItem = (product: Product) => ({
+    id: product.id,
+    name: product.title,
+    price: product.price,
+    status: product.isFeatured ? 'featured' : product.isBestSeller ? 'sale' : '',
+    coverUrl: product.imageUrls?.[0]
+      ? `http://localhost:3000${product.imageUrls[0]}`
+      : '/assets/images/product/product-1.webp',
+    colors: ['#00AB55', '#000000', '#FFFFFF'],
+    priceSale: product.isBestSeller ? product.price * 1.2 : null,
+    images: product.imageUrls?.map((url) => `http://localhost:3000${url}`) || [
+      '/assets/images/product/product-1.webp',
+    ],
+    description: `High-quality ${product.title} from our premium collection. Perfect for everyday use with excellent durability and style.`,
+    stock: product.stock,
+    category: getCategoryName(product.categoryId),
+  });
+
+  const handleViewModeChange = (
+    _: React.MouseEvent<HTMLElement>,
+    newViewMode: 'table' | 'card' | null
+  ) => {
+    if (newViewMode !== null) {
+      setViewMode(newViewMode);
+    }
+  };
+
   const tableColumns: TableColumn[] = [
     {
       key: 'title',
@@ -316,18 +349,36 @@ export function AdminProductsView() {
 
   return (
     <div>
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 5 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4" flexGrow={1}>
           Products Management
         </Typography>
-        <Button
-          variant="contained"
-          color="inherit"
-          startIcon={<Iconify icon="mingcute:add-line" />}
-          onClick={() => handleOpenDialog()}
-        >
-          New Product
-        </Button>
+
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <ToggleButtonGroup
+            value={viewMode}
+            exclusive
+            onChange={handleViewModeChange}
+            aria-label="view mode"
+            size="small"
+          >
+            <ToggleButton value="table" aria-label="table view">
+              <Iconify icon="solar:list-bold" />
+            </ToggleButton>
+            <ToggleButton value="card" aria-label="card view">
+              <Iconify icon="solar:widget-4-bold" />
+            </ToggleButton>
+          </ToggleButtonGroup>
+
+          <Button
+            variant="contained"
+            color="inherit"
+            startIcon={<Iconify icon="mingcute:add-line" />}
+            onClick={() => handleOpenDialog()}
+          >
+            New Product
+          </Button>
+        </Box>
       </Box>
 
       {error && (
@@ -336,13 +387,56 @@ export function AdminProductsView() {
         </Alert>
       )}
 
-      <DataTable
-        columns={tableColumns}
-        data={products}
-        loading={loading}
-        emptyMessage="No products found"
-        minWidth={1200}
-      />
+      {viewMode === 'table' ? (
+        <DataTable
+          columns={tableColumns}
+          data={products}
+          loading={loading}
+          emptyMessage="No products found"
+          minWidth={1200}
+        />
+      ) : (
+        <Grid container spacing={3}>
+          {loading ? (
+            Array.from({ length: 8 }).map((_, index) => (
+              <Grid key={index} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+                <Box
+                  sx={{
+                    height: 400,
+                    bgcolor: 'grey.100',
+                    borderRadius: 2,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <CircularProgress />
+                </Box>
+              </Grid>
+            ))
+          ) : products.length === 0 ? (
+            <Grid size={12}>
+              <Box
+                sx={{
+                  textAlign: 'center',
+                  py: 6,
+                  color: 'text.secondary',
+                }}
+              >
+                <Iconify icon="solar:box-bold" sx={{ fontSize: 64, mb: 2, opacity: 0.3 }} />
+                <Typography variant="h6">No products found</Typography>
+                <Typography variant="body2">Start by adding your first product</Typography>
+              </Box>
+            </Grid>
+          ) : (
+            products.map((product) => (
+              <Grid key={product.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+                <ProductItem product={convertToProductItem(product)} />
+              </Grid>
+            ))
+          )}
+        </Grid>
+      )}
 
       <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
         <DialogTitle>{editingProduct ? 'Edit Product' : 'Add New Product'}</DialogTitle>
