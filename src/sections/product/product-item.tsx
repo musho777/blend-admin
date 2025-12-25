@@ -3,8 +3,8 @@ import { useState } from 'react';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Chip from '@mui/material/Chip';
-import CardMedia from '@mui/material/CardMedia';
 import Tooltip from '@mui/material/Tooltip';
+import CardMedia from '@mui/material/CardMedia';
 import Typography from '@mui/material/Typography';
 import CardContent from '@mui/material/CardContent';
 
@@ -98,10 +98,8 @@ export function ProductItem({ product }: { product: ProductItemProps }) {
   );
 
   const renderDescription = product.description ? (
-    <Tooltip 
-      title={
-        <div dangerouslySetInnerHTML={{ __html: product.description }} />
-      } 
+    <Tooltip
+      title={<div dangerouslySetInnerHTML={{ __html: product.description }} />}
       placement="top"
     >
       <Typography

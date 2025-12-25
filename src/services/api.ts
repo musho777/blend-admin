@@ -166,12 +166,12 @@ class ApiService {
   async getProducts(params?: { page?: number; limit?: number }): Promise<{
     data: Product[];
     meta: {
-      currentPage: number;
-      itemsPerPage: number;
-      totalItems: number;
-      totalPages: number;
-      hasNextPage: boolean;
-      hasPreviousPage: boolean;
+      hasNext: boolean;
+      hasPrevious: boolean;
+      limit: number;
+      page: number;
+      pages: number;
+      total: number;
     };
   }> {
     const searchParams = new URLSearchParams();
@@ -282,11 +282,13 @@ class ApiService {
   // Orders
   async getOrders(params?: { status?: string; page?: number; limit?: number }): Promise<{
     orders: Order[];
-    pagination: {
-      page: number;
+    meta: {
+      hasNext: boolean;
+      hasPrevious: boolean;
       limit: number;
-      total: number;
+      page: number;
       pages: number;
+      total: number;
     };
   }> {
     const searchParams = new URLSearchParams();
