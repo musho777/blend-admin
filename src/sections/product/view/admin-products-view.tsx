@@ -29,12 +29,14 @@ import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
 import { apiService } from 'src/services/api';
 
 import { Iconify } from 'src/components/iconify';
+import { RichTextEditor } from 'src/components/rich-text-editor';
 import { DataTable, type TableColumn } from 'src/components/table';
 
 import { ProductItem } from '../product-item';
 
 interface ProductFormData {
   title: string;
+  description: string;
   price: number;
   stock: number;
   categoryId: string;
@@ -48,12 +50,12 @@ interface ProductFormData {
 }
 
 interface PaginationMeta {
-  currentPage: number;
-  itemsPerPage: number;
-  totalItems: number;
-  totalPages: number;
-  hasNextPage: boolean;
-  hasPreviousPage: boolean;
+  page: number;
+  limit: number;
+  total: number;
+  pages: number;
+  hasNext: boolean;
+  hasPrevious: boolean;
 }
 
 export function AdminProductsView() {
@@ -69,6 +71,7 @@ export function AdminProductsView() {
   const [paginationMeta, setPaginationMeta] = useState<PaginationMeta | null>(null);
   const [formData, setFormData] = useState<ProductFormData>({
     title: '',
+    description: '',
     price: 0,
     stock: 0,
     categoryId: '',
@@ -94,11 +97,13 @@ export function AdminProductsView() {
           page: pageToUse,
           limit: limitToUse,
         });
-        setProducts(productsResponse.data);
+        setProducts(productsResponse.data || []);
         setPaginationMeta(productsResponse.meta);
         setError('');
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch products');
+        setProducts([]);
+        setPaginationMeta(null);
       } finally {
         setLoading(false);
       }
@@ -125,6 +130,7 @@ export function AdminProductsView() {
       setEditingProduct(product);
       setFormData({
         title: product.title,
+        description: product.description || '',
         price: product.price,
         stock: product.stock,
         categoryId: product.categoryId,
@@ -140,6 +146,7 @@ export function AdminProductsView() {
       setEditingProduct(null);
       setFormData({
         title: '',
+        description: '',
         price: 0,
         stock: 0,
         categoryId: '',
@@ -187,6 +194,7 @@ export function AdminProductsView() {
     setEditingProduct(null);
     setFormData({
       title: '',
+      description: '',
       price: 0,
       stock: 0,
       categoryId: '',
@@ -246,6 +254,7 @@ export function AdminProductsView() {
 
       const formDataToSend = new FormData();
       formDataToSend.append('title', formData.title);
+      formDataToSend.append('description', formData.description);
       formDataToSend.append('price', Math.max(0, formData.price).toString());
       formDataToSend.append('stock', Math.max(0, formData.stock).toString());
       formDataToSend.append('categoryId', formData.categoryId);
@@ -308,7 +317,9 @@ export function AdminProductsView() {
     images: product.imageUrls?.map((url) => `http://localhost:3000${url}`) || [
       '/assets/images/product/product-1.webp',
     ],
-    description: `High-quality ${product.title} from our premium collection. Perfect for everyday use with excellent durability and style.`,
+    description:
+      product.description ||
+      `High-quality ${product.title} from our premium collection. Perfect for everyday use with excellent durability and style.`,
     stock: product.stock,
     category: getCategoryName(product.categoryId),
   });
@@ -404,10 +415,10 @@ export function AdminProductsView() {
             size="small"
           >
             <ToggleButton value="table" aria-label="table view">
-              <Iconify icon="solar:hamburger-menu-bold" />
+              <Iconify icon="custom:menu-duotone" />
             </ToggleButton>
             <ToggleButton value="card" aria-label="card view">
-              <Iconify icon="solar:widget-6-bold" />
+              <Iconify icon="solar:eye-bold" />
             </ToggleButton>
           </ToggleButtonGroup>
 
@@ -438,7 +449,7 @@ export function AdminProductsView() {
             minWidth={1200}
           />
           {/* Pagination for table view */}
-          {paginationMeta && paginationMeta.totalPages > 1 && (
+          {paginationMeta && paginationMeta.pages > 1 && (
             <Box
               sx={{
                 mt: 3,
@@ -451,11 +462,11 @@ export function AdminProductsView() {
             >
               <Typography variant="body2" color="textSecondary">
                 Showing {(currentPage - 1) * itemsPerPage + 1} to{' '}
-                {Math.min(currentPage * itemsPerPage, paginationMeta.totalItems)} of{' '}
-                {paginationMeta.totalItems} items
+                {Math.min(currentPage * itemsPerPage, paginationMeta.total)} of{' '}
+                {paginationMeta.total} items
               </Typography>
               <Pagination
-                count={paginationMeta.totalPages}
+                count={paginationMeta.pages}
                 page={currentPage}
                 onChange={(_, page) => handlePageChange(page)}
                 showFirstButton
@@ -520,7 +531,7 @@ export function AdminProductsView() {
       )}
 
       {/* Pagination for card view */}
-      {viewMode === 'card' && paginationMeta && paginationMeta.totalPages > 1 && (
+      {viewMode === 'card' && paginationMeta && paginationMeta.pages > 1 && (
         <Box
           sx={{
             mt: 4,
@@ -532,10 +543,10 @@ export function AdminProductsView() {
           }}
         >
           <Typography variant="body2" color="textSecondary">
-            {paginationMeta.totalItems} items total
+            {paginationMeta.total} items total
           </Typography>
           <Pagination
-            count={paginationMeta.totalPages}
+            count={paginationMeta.pages}
             page={currentPage}
             onChange={(_, page) => handlePageChange(page)}
             showFirstButton
@@ -568,6 +579,18 @@ export function AdminProductsView() {
               onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
               required
             />
+
+            <Box>
+              <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                Description *
+              </Typography>
+              <RichTextEditor
+                value={formData.description}
+                onChange={(value) => setFormData((prev) => ({ ...prev, description: value }))}
+                placeholder="Enter product description..."
+                helperText="Use the toolbar above to format your description"
+              />
+            </Box>
 
             <Box sx={{ display: 'flex', gap: 2 }}>
               <TextField
@@ -670,8 +693,13 @@ export function AdminProductsView() {
             />
 
             <Box>
-              <Typography variant="subtitle2" sx={{ mb: 2 }}>
-                Product Images (Max 5)
+              <Typography
+                variant="subtitle2"
+                sx={{
+                  mb: 2,
+                }}
+              >
+                Product Images (Max 5) {!editingProduct && '*'}
               </Typography>
               <Button
                 variant="outlined"
@@ -827,12 +855,15 @@ export function AdminProductsView() {
             disabled={
               submitting ||
               !formData.title.trim() ||
+              !formData.description.replace(/<[^>]*>/g, '').trim() ||
               !formData.categoryId ||
               formData.price < 0 ||
               formData.stock < 0 ||
               isNaN(formData.price) ||
               isNaN(formData.stock) ||
-              isNaN(formData.priority || 0)
+              isNaN(formData.priority || 0) ||
+              (!editingProduct &&
+                (formData.image?.length || 0) + (formData.existingImages?.length || 0) === 0)
             }
             startIcon={submitting ? <CircularProgress size={20} /> : null}
           >

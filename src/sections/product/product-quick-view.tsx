@@ -132,7 +132,7 @@ export function ProductQuickViewDialog({ open, product, onClose }: ProductQuickV
                       },
                     }}
                   >
-                    <Iconify icon="solar:alt-arrow-left-bold" />
+                    <Iconify icon="eva:arrow-ios-forward-fill" style={{ transform: 'rotate(180deg)' }} />
                   </IconButton>
                   <IconButton
                     onClick={handleNextImage}
@@ -147,7 +147,7 @@ export function ProductQuickViewDialog({ open, product, onClose }: ProductQuickV
                       },
                     }}
                   >
-                    <Iconify icon="solar:alt-arrow-right-bold" />
+                    <Iconify icon="eva:arrow-ios-forward-fill" />
                   </IconButton>
                 </>
               )}
@@ -281,9 +281,18 @@ export function ProductQuickViewDialog({ open, product, onClose }: ProductQuickV
                   <Typography variant="subtitle2" sx={{ mb: 1 }}>
                     Description
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {product.description}
-                  </Typography>
+                  <Typography 
+                    variant="body2" 
+                    color="text.secondary"
+                    component="div"
+                    dangerouslySetInnerHTML={{ __html: product.description }}
+                    sx={{
+                      '& p': { margin: 0, marginBottom: 1 },
+                      '& h1, & h2, & h3, & h4, & h5, & h6': { margin: 0, marginBottom: 0.5, marginTop: 1 },
+                      '& ul, & ol': { paddingLeft: 2, margin: 0 },
+                      '& li': { marginBottom: 0.25 }
+                    }}
+                  />
                 </Box>
               )}
 

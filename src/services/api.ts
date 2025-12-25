@@ -14,6 +14,7 @@ export interface LoginResponse {
 export interface Product {
   id: string;
   title: string;
+  description?: string;
   price: number;
   stock: number;
   categoryId: string;

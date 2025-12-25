@@ -62,7 +62,7 @@ export function DataTable({
                     </Box>
                   </TableCell>
                 </TableRow>
-              ) : data.length === 0 ? (
+              ) : !data || data.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={columns.length} align="center">
                     <Box sx={{ py: 3 }}>
@@ -71,7 +71,7 @@ export function DataTable({
                   </TableCell>
                 </TableRow>
               ) : (
-                data.map((row, index) => (
+                (data || []).map((row, index) => (
                   <TableRow key={index} hover>
                     {columns.map((column) => (
                       <TableCell
