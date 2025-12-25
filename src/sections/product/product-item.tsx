@@ -121,11 +121,13 @@ export function ProductItem({ product }: { product: ProductItemProps }) {
 
   return (
     <Card
+      onClick={handleQuickView}
       sx={{
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
         transition: 'all 0.3s ease-in-out',
+        cursor: 'pointer',
         '&:hover': {
           transform: 'translateY(-4px)',
           boxShadow: (theme) => theme.customShadows.z8,
