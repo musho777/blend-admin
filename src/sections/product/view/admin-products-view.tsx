@@ -332,11 +332,11 @@ export function AdminProductsView() {
     price: product.price,
     status: product.isFeatured ? 'featured' : product.isBestSeller ? 'sale' : '',
     coverUrl: product.imageUrls?.[0]
-      ? `http://localhost:3000${product.imageUrls[0]}`
+      ? `http://localhost:3000/${product.imageUrls[0]}`
       : '/assets/images/product/product-1.webp',
     colors: ['#00AB55', '#000000', '#FFFFFF'],
     priceSale: product.isBestSeller ? product.price * 1.2 : null,
-    images: product.imageUrls?.map((url) => `http://localhost:3000${url}`) || [
+    images: product.imageUrls?.map((url) => `http://localhost:3000/${url}`) || [
       '/assets/images/product/product-1.webp',
     ],
     description:
@@ -759,12 +759,12 @@ export function AdminProductsView() {
                     >
                       <Box
                         component="img"
-                        src={`http://localhost:3000${imageUrl}`}
+                        src={`http://localhost:3000/${imageUrl}`}
                         alt={`Existing ${index + 1}`}
                         sx={{
                           width: '100%',
                           height: '100%',
-                          objectFit: 'cover',
+                          objectFit: 'contain',
                         }}
                       />
                       <IconButton

@@ -12,7 +12,6 @@ import DialogContent from '@mui/material/DialogContent';
 import { fCurrency } from 'src/utils/format-number';
 
 import { Iconify } from 'src/components/iconify';
-import { ColorPreview } from 'src/components/color-utils';
 
 // ----------------------------------------------------------------------
 
@@ -132,7 +131,10 @@ export function ProductQuickViewDialog({ open, product, onClose }: ProductQuickV
                       },
                     }}
                   >
-                    <Iconify icon="eva:arrow-ios-forward-fill" style={{ transform: 'rotate(180deg)' }} />
+                    <Iconify
+                      icon="eva:arrow-ios-forward-fill"
+                      style={{ transform: 'rotate(180deg)' }}
+                    />
                   </IconButton>
                   <IconButton
                     onClick={handleNextImage}
@@ -261,13 +263,6 @@ export function ProductQuickViewDialog({ open, product, onClose }: ProductQuickV
 
               <Divider />
 
-              <Box>
-                <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                  Available Colors
-                </Typography>
-                <ColorPreview colors={product.colors} />
-              </Box>
-
               {product.stock !== undefined && (
                 <Box>
                   <Typography variant="body2" color="text.secondary">
@@ -281,22 +276,26 @@ export function ProductQuickViewDialog({ open, product, onClose }: ProductQuickV
                   <Typography variant="subtitle2" sx={{ mb: 1 }}>
                     Description
                   </Typography>
-                  <Typography 
-                    variant="body2" 
+                  <Typography
+                    variant="body2"
                     color="text.secondary"
                     component="div"
                     dangerouslySetInnerHTML={{ __html: product.description }}
                     sx={{
+                      maxHeight: 133,
+                      overflowY: 'auto',
                       '& p': { margin: 0, marginBottom: 1 },
-                      '& h1, & h2, & h3, & h4, & h5, & h6': { margin: 0, marginBottom: 0.5, marginTop: 1 },
+                      '& h1, & h2, & h3, & h4, & h5, & h6': {
+                        margin: 0,
+                        marginBottom: 0.5,
+                        marginTop: 1,
+                      },
                       '& ul, & ol': { paddingLeft: 2, margin: 0 },
-                      '& li': { marginBottom: 0.25 }
+                      '& li': { marginBottom: 0.25 },
                     }}
                   />
                 </Box>
               )}
-
-              <Divider />
             </Stack>
           </Box>
         </Box>

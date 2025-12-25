@@ -1,12 +1,7 @@
 import 'react-image-crop/dist/ReactCrop.css';
 
+import ReactCrop, { type Crop } from 'react-image-crop';
 import React, { useRef, useState, useCallback } from 'react';
-import ReactCrop, {
-  type Crop,
-  centerCrop,
-  makeAspectCrop,
-  convertToPixelCrop,
-} from 'react-image-crop';
 
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
@@ -25,23 +20,17 @@ interface ImageCropperProps {
   fileName: string;
 }
 
-const CROP_SIZE = 300;
+const CROP_SIZE = 600;
 const ASPECT_RATIO = 1;
 
-function centerAspectCrop(mediaWidth: number, mediaHeight: number, aspect: number) {
-  return centerCrop(
-    makeAspectCrop(
-      {
-        unit: '%',
-        width: 90,
-      },
-      aspect,
-      mediaWidth,
-      mediaHeight
-    ),
-    mediaWidth,
-    mediaHeight
-  );
+function getInitialCrop(mediaWidth: number, mediaHeight: number) {
+  return {
+    unit: '%' as const,
+    x: 10,
+    y: 10,
+    width: 80,
+    height: 80,
+  };
 }
 
 function getCroppedImg(image: HTMLImageElement, crop: Crop): Promise<Blob> {
@@ -52,10 +41,19 @@ function getCroppedImg(image: HTMLImageElement, crop: Crop): Promise<Blob> {
     throw new Error('No 2d context');
   }
 
-  const pixelCrop = convertToPixelCrop(crop, image.naturalWidth, image.naturalHeight);
+  const scaleX = image.naturalWidth / image.width;
+  const scaleY = image.naturalHeight / image.height;
 
+  const pixelCrop = {
+    x: crop.x * scaleX,
+    y: crop.y * scaleY,
+    width: crop.width * scaleX,
+    height: crop.height * scaleY,
+  };
+
+  const aspectRatio = pixelCrop.width / pixelCrop.height;
   canvas.width = CROP_SIZE;
-  canvas.height = CROP_SIZE;
+  canvas.height = CROP_SIZE / aspectRatio;
 
   ctx.imageSmoothingQuality = 'high';
 
@@ -67,8 +65,8 @@ function getCroppedImg(image: HTMLImageElement, crop: Crop): Promise<Blob> {
     pixelCrop.height,
     0,
     0,
-    CROP_SIZE,
-    CROP_SIZE
+    canvas.width,
+    canvas.height
   );
 
   return new Promise((resolve) => {
@@ -100,13 +98,13 @@ export function ImageCropper({
   const onImageLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
     const { naturalWidth: width, naturalHeight: height } = e.currentTarget;
 
-    if (width < CROP_SIZE || height < CROP_SIZE) {
-      setError(`Image too small. Minimum size: ${CROP_SIZE}x${CROP_SIZE}px`);
+    if (width < CROP_SIZE || height < 100) {
+      setError(`Image too small. Minimum width: ${CROP_SIZE}px`);
       return;
     }
 
     setError('');
-    const crop = centerAspectCrop(width, height, ASPECT_RATIO);
+    const crop = getInitialCrop(width, height);
     setCrop(crop);
     setCompletedCrop(crop);
   }, []);
@@ -143,8 +141,8 @@ export function ImageCropper({
       <DialogContent>
         <Box sx={{ p: 2 }}>
           <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-            Drag to move the crop area. The image will be resized to {CROP_SIZE}x{CROP_SIZE} pixels
-            for optimal product display.
+            Drag to select the crop area. The image will be resized to {CROP_SIZE}px width
+            maintaining the original aspect ratio.
           </Typography>
 
           {error && (
@@ -165,13 +163,12 @@ export function ImageCropper({
               maxHeight={CROP_SIZE}
               keepSelection
               ruleOfThirds
-              circularCrop={false}
               locked
             >
               <img
                 ref={imgRef}
                 src={imageSrc}
-                style={{ maxWidth: '100%', maxHeight: '400px' }}
+                style={{ maxWidth: '100%', height: 'auto' }}
                 onLoad={onImageLoad}
                 alt="Crop preview"
               />
@@ -179,7 +176,7 @@ export function ImageCropper({
           </Box>
 
           <Typography variant="caption" color="textSecondary">
-            Final image will be {CROP_SIZE}x{CROP_SIZE}px
+            Final image will be {CROP_SIZE}px wide
           </Typography>
         </Box>
       </DialogContent>
