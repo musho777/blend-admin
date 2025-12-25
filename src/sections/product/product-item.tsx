@@ -2,18 +2,15 @@ import { useState } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
-import Tooltip from '@mui/material/Tooltip';
+import Chip from '@mui/material/Chip';
 import CardMedia from '@mui/material/CardMedia';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
 import CardContent from '@mui/material/CardContent';
-import CardActions from '@mui/material/CardActions';
 
 import { fCurrency } from 'src/utils/format-number';
 
 import { Label } from 'src/components/label';
-import { Iconify } from 'src/components/iconify';
-import { ColorPreview } from 'src/components/color-utils';
 
 import { ProductQuickViewDialog, type ProductQuickViewProps } from './product-quick-view';
 
@@ -91,6 +88,39 @@ export function ProductItem({ product }: { product: ProductItemProps }) {
     </Typography>
   );
 
+  const renderStock = (
+    <Chip
+      label={`Stock: ${product.stock || 0}`}
+      size="small"
+      color={product.stock && product.stock > 0 ? 'success' : 'error'}
+      sx={{ fontSize: '0.75rem', height: 20 }}
+    />
+  );
+
+  const renderDescription = product.description ? (
+    <Tooltip 
+      title={
+        <div dangerouslySetInnerHTML={{ __html: product.description }} />
+      } 
+      placement="top"
+    >
+      <Typography
+        variant="body2"
+        color="text.secondary"
+        sx={{
+          mt: 1,
+          display: '-webkit-box',
+          WebkitBoxOrient: 'vertical',
+          WebkitLineClamp: 2,
+          overflow: 'hidden',
+          lineHeight: 1.4,
+          cursor: 'help',
+        }}
+        dangerouslySetInnerHTML={{ __html: product.description }}
+      />
+    </Tooltip>
+  ) : null;
+
   return (
     <Card
       sx={{
@@ -139,37 +169,13 @@ export function ProductItem({ product }: { product: ProductItemProps }) {
           {product.name}
         </Typography>
 
-        <Box sx={{ mb: 2 }}>
-          <ColorPreview colors={product.colors} />
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+          {renderPrice}
+          {renderStock}
         </Box>
 
-        {renderPrice}
+        {renderDescription}
       </CardContent>
-
-      <CardActions sx={{ p: 2, pt: 0, justifyContent: 'space-between' }}>
-        <Tooltip title="Add to cart">
-          <IconButton
-            color="primary"
-            sx={{
-              bgcolor: 'primary.main',
-              color: 'primary.contrastText',
-              '&:hover': {
-                bgcolor: 'primary.dark',
-              },
-            }}
-          >
-            <Iconify icon="solar:cart-3-bold" />
-          </IconButton>
-        </Tooltip>
-
-        <Box sx={{ display: 'flex', gap: 0.5 }}>
-          <Tooltip title="Quick view">
-            <IconButton size="small" onClick={handleQuickView}>
-              <Iconify icon="solar:eye-bold" />
-            </IconButton>
-          </Tooltip>
-        </Box>
-      </CardActions>
 
       <ProductQuickViewDialog
         open={openQuickView}
