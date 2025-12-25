@@ -10,8 +10,9 @@ import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import Select from '@mui/material/Select';
 import Switch from '@mui/material/Switch';
+import Popover from '@mui/material/Popover';
+import MenuList from '@mui/material/MenuList';
 import TableRow from '@mui/material/TableRow';
-import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 import TableBody from '@mui/material/TableBody';
 import TableHead from '@mui/material/TableHead';
@@ -26,6 +27,7 @@ import DialogContent from '@mui/material/DialogContent';
 import TableContainer from '@mui/material/TableContainer';
 import CircularProgress from '@mui/material/CircularProgress';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
 
 import { apiService } from 'src/services/api';
 
@@ -43,6 +45,7 @@ interface ProductFormData {
   priority?: number;
   image?: File[];
   existingImages?: string[];
+  imagesToRemove?: string[];
 }
 
 export function AdminProductsView() {
@@ -63,8 +66,11 @@ export function AdminProductsView() {
     priority: 0,
     image: [],
     existingImages: [],
+    imagesToRemove: [],
   });
   const [submitting, setSubmitting] = useState(false);
+  const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   const fetchData = useCallback(async () => {
     try {
@@ -101,6 +107,7 @@ export function AdminProductsView() {
         priority: product.priority || 0,
         image: [],
         existingImages: product.imageUrls || [],
+        imagesToRemove: [],
       });
     } else {
       setEditingProduct(null);
@@ -115,10 +122,38 @@ export function AdminProductsView() {
         priority: 0,
         image: [],
         existingImages: [],
+        imagesToRemove: [],
       });
     }
     setOpenDialog(true);
   };
+
+  const handleOpenPopover = useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>, product: Product) => {
+      setOpenPopover(event.currentTarget);
+      setSelectedProduct(product);
+    },
+    []
+  );
+
+  const handleClosePopover = useCallback(() => {
+    setOpenPopover(null);
+    setSelectedProduct(null);
+  }, []);
+
+  const handleEditFromMenu = useCallback(() => {
+    if (selectedProduct) {
+      handleOpenDialog(selectedProduct);
+      handleClosePopover();
+    }
+  }, [selectedProduct]);
+
+  const handleDeleteFromMenu = useCallback(() => {
+    if (selectedProduct) {
+      handleDelete(selectedProduct.id);
+      handleClosePopover();
+    }
+  }, [selectedProduct]);
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
@@ -134,6 +169,7 @@ export function AdminProductsView() {
       priority: 0,
       image: [],
       existingImages: [],
+      imagesToRemove: [],
     });
   };
 
@@ -165,10 +201,16 @@ export function AdminProductsView() {
   };
 
   const handleRemoveExistingImage = (index: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      existingImages: prev.existingImages?.filter((_, i) => i !== index) || [],
-    }));
+    setFormData((prev) => {
+      const imageToRemove = prev.existingImages?.[index];
+      return {
+        ...prev,
+        existingImages: prev.existingImages?.filter((_, i) => i !== index) || [],
+        imagesToRemove: imageToRemove
+          ? [...(prev.imagesToRemove || []), imageToRemove]
+          : prev.imagesToRemove || [],
+      };
+    });
   };
 
   const handleSubmit = async () => {
@@ -188,6 +230,12 @@ export function AdminProductsView() {
       formData.image?.forEach((file) => {
         formDataToSend.append('images', file);
       });
+
+      if (formData.imagesToRemove?.length) {
+        formData.imagesToRemove.forEach((imageUrl, index) => {
+          formDataToSend.append(`imagesToRemove[${index}]`, imageUrl);
+        });
+      }
 
       if (editingProduct) {
         await apiService.updateProductWithImages(editingProduct.id, formDataToSend);
@@ -302,14 +350,8 @@ export function AdminProductsView() {
                         <Typography variant="body2">{product.priority || 0}</Typography>
                       </TableCell>
                       <TableCell align="right">
-                        <IconButton onClick={() => handleOpenDialog(product)}>
-                          <Iconify icon="solar:pen-bold" />
-                        </IconButton>
-                        <IconButton
-                          onClick={() => handleDelete(product.id)}
-                          sx={{ color: 'error.main' }}
-                        >
-                          <Iconify icon="solar:trash-bin-trash-bold" />
+                        <IconButton onClick={(event) => handleOpenPopover(event, product)}>
+                          <Iconify icon="eva:more-vertical-fill" />
                         </IconButton>
                       </TableCell>
                     </TableRow>
@@ -580,11 +622,6 @@ export function AdminProductsView() {
                   ))}
                 </Box>
               )}
-
-              <Typography variant="caption" color="textSecondary">
-                {(formData.image?.length || 0) + (formData.existingImages?.length || 0)} / 5 images
-                selected
-              </Typography>
             </Box>
           </Box>
         </DialogContent>
@@ -609,6 +646,41 @@ export function AdminProductsView() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Popover
+        open={!!openPopover}
+        anchorEl={openPopover}
+        onClose={handleClosePopover}
+        anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <MenuList
+          disablePadding
+          sx={{
+            p: 0.5,
+            gap: 0.5,
+            width: 140,
+            display: 'flex',
+            flexDirection: 'column',
+            [`& .${menuItemClasses.root}`]: {
+              px: 1,
+              gap: 2,
+              borderRadius: 0.75,
+              [`&.${menuItemClasses.selected}`]: { bgcolor: 'action.selected' },
+            },
+          }}
+        >
+          <MenuItem onClick={handleEditFromMenu}>
+            <Iconify icon="solar:pen-bold" />
+            Edit
+          </MenuItem>
+
+          <MenuItem onClick={handleDeleteFromMenu} sx={{ color: 'error.main' }}>
+            <Iconify icon="solar:trash-bin-trash-bold" />
+            Delete
+          </MenuItem>
+        </MenuList>
+      </Popover>
     </div>
   );
 }
