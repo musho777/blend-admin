@@ -6,11 +6,13 @@ import Chip from '@mui/material/Chip';
 import Tooltip from '@mui/material/Tooltip';
 import CardMedia from '@mui/material/CardMedia';
 import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
 import CardContent from '@mui/material/CardContent';
 
 import { fCurrency } from 'src/utils/format-number';
 
 import { Label } from 'src/components/label';
+import { Iconify } from 'src/components/iconify';
 
 import { ProductQuickViewDialog, type ProductQuickViewProps } from './product-quick-view';
 
@@ -121,13 +123,11 @@ export function ProductItem({ product }: { product: ProductItemProps }) {
 
   return (
     <Card
-      onClick={handleQuickView}
       sx={{
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
         transition: 'all 0.3s ease-in-out',
-        cursor: 'pointer',
         '&:hover': {
           transform: 'translateY(-4px)',
           boxShadow: (theme) => theme.customShadows.z8,
@@ -150,6 +150,20 @@ export function ProductItem({ product }: { product: ProductItemProps }) {
             },
           }}
         />
+        <IconButton
+          onClick={handleQuickView}
+          sx={{
+            position: 'absolute',
+            top: 16,
+            left: 16,
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            '&:hover': {
+              backgroundColor: 'rgba(255, 255, 255, 1)',
+            },
+          }}
+        >
+          <Iconify icon="solar:eye-bold" />
+        </IconButton>
       </Box>
 
       <CardContent sx={{ flexGrow: 1, p: 2 }}>
