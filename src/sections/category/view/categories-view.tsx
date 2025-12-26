@@ -25,12 +25,14 @@ import { apiService } from 'src/services/api';
 
 import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
+import { ImageCropper } from 'src/components/image-cropper';
 
 // ----------------------------------------------------------------------
 
 interface CategoryFormData {
   title: string;
-  image: string;
+  image?: File;
+  existingImage?: string;
   slug?: string;
 }
 
@@ -42,10 +44,13 @@ export function CategoriesView() {
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [formData, setFormData] = useState<CategoryFormData>({
     title: '',
-    image: '',
+    image: undefined,
+    existingImage: '',
     slug: '',
   });
   const [submitting, setSubmitting] = useState(false);
+  const [cropperOpen, setCropperOpen] = useState(false);
+  const [imageToProcess, setImageToProcess] = useState<{ file: File; src: string } | null>(null);
 
   const fetchCategories = useCallback(async () => {
     try {
@@ -69,14 +74,16 @@ export function CategoriesView() {
       setEditingCategory(category);
       setFormData({
         title: category.title,
-        image: category.image,
+        image: undefined,
+        existingImage: category.image,
         slug: category.slug || '',
       });
     } else {
       setEditingCategory(null);
       setFormData({
         title: '',
-        image: '',
+        image: undefined,
+        existingImage: '',
         slug: '',
       });
     }
@@ -88,19 +95,70 @@ export function CategoriesView() {
     setEditingCategory(null);
     setFormData({
       title: '',
-      image: '',
+      image: undefined,
+      existingImage: '',
       slug: '',
     });
+    if (imageToProcess) {
+      URL.revokeObjectURL(imageToProcess.src);
+      setImageToProcess(null);
+    }
+  };
+
+  const handleImageUpload = (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+
+    const file = files[0];
+    const src = URL.createObjectURL(file);
+    setImageToProcess({ file, src });
+    setCropperOpen(true);
+  };
+
+  const handleCropComplete = (croppedFile: File) => {
+    setFormData((prev) => ({
+      ...prev,
+      image: croppedFile,
+    }));
+    setCropperOpen(false);
+    setImageToProcess(null);
+  };
+
+  const handleCropperClose = () => {
+    setCropperOpen(false);
+    if (imageToProcess) {
+      URL.revokeObjectURL(imageToProcess.src);
+    }
+    setImageToProcess(null);
+  };
+
+  const handleRemoveImage = () => {
+    setFormData((prev) => ({
+      ...prev,
+      image: undefined,
+      existingImage: '',
+    }));
   };
 
   const handleSubmit = async () => {
     try {
       setSubmitting(true);
 
+      const formDataToSend = new FormData();
+      formDataToSend.append('title', formData.title);
+      if (formData.slug) {
+        formDataToSend.append('slug', formData.slug);
+      }
+
+      if (formData.image) {
+        formDataToSend.append('image', formData.image);
+      } else if (formData.existingImage) {
+        formDataToSend.append('existingImage', formData.existingImage);
+      }
+
       if (editingCategory) {
-        await apiService.updateCategory(editingCategory.id, formData);
+        await apiService.updateCategoryWithImage(editingCategory.id, formDataToSend);
       } else {
-        await apiService.createCategory(formData);
+        await apiService.createCategoryWithImage(formDataToSend);
       }
 
       await fetchCategories();
@@ -185,7 +243,7 @@ export function CategoriesView() {
                         {category.image ? (
                           <Box
                             component="img"
-                            src={category.image}
+                            src={`http://localhost:3000/${category.image}`}
                             alt={category.title}
                             sx={{
                               width: 48,
@@ -242,13 +300,70 @@ export function CategoriesView() {
               onChange={(e) => setFormData((prev) => ({ ...prev, slug: e.target.value }))}
               helperText="URL-friendly version of title (optional)"
             />
-            <TextField
-              fullWidth
-              label="Image URL"
-              value={formData.image}
-              onChange={(e) => setFormData((prev) => ({ ...prev, image: e.target.value }))}
-              required
-            />
+
+            <Box>
+              <Typography variant="subtitle2" sx={{ mb: 2 }}>
+                Category Image {!editingCategory && '*'}
+              </Typography>
+              <Button
+                variant="outlined"
+                component="label"
+                startIcon={<Iconify icon="mingcute:add-line" />}
+                disabled={!!(formData.image || formData.existingImage)}
+                sx={{ mb: 2 }}
+              >
+                Select Image
+                <input
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={(e) => handleImageUpload(e.target.files)}
+                />
+              </Button>
+
+              {(formData.existingImage || formData.image) && (
+                <Box
+                  sx={{
+                    position: 'relative',
+                    border: '1px solid #e0e0e0',
+                    borderRadius: 1,
+                    overflow: 'hidden',
+                    width: 200,
+                    height: 200,
+                  }}
+                >
+                  <Box
+                    component="img"
+                    src={
+                      formData.image
+                        ? URL.createObjectURL(formData.image)
+                        : `http://localhost:3000/${formData.existingImage}`
+                    }
+                    alt="Category preview"
+                    sx={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                    }}
+                  />
+                  <IconButton
+                    size="small"
+                    onClick={handleRemoveImage}
+                    sx={{
+                      position: 'absolute',
+                      top: 8,
+                      right: 8,
+                      bgcolor: 'rgba(255, 255, 255, 0.8)',
+                      '&:hover': {
+                        bgcolor: 'rgba(255, 255, 255, 0.9)',
+                      },
+                    }}
+                  >
+                    <Iconify icon="mingcute:close-line" width={20} />
+                  </IconButton>
+                </Box>
+              )}
+            </Box>
           </Box>
         </DialogContent>
         <DialogActions>
@@ -256,13 +371,27 @@ export function CategoriesView() {
           <Button
             onClick={handleSubmit}
             variant="contained"
-            disabled={submitting || !formData.title || !formData.image}
+            disabled={
+              submitting ||
+              !formData.title ||
+              (!formData.image && !formData.existingImage)
+            }
             startIcon={submitting ? <CircularProgress size={20} /> : null}
           >
             {submitting ? 'Saving...' : editingCategory ? 'Update' : 'Create'}
           </Button>
         </DialogActions>
       </Dialog>
+
+      {imageToProcess && (
+        <ImageCropper
+          open={cropperOpen}
+          onClose={handleCropperClose}
+          onCropComplete={handleCropComplete}
+          imageSrc={imageToProcess.src}
+          fileName={imageToProcess.file.name}
+        />
+      )}
     </Box>
   );
 }

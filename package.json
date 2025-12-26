@@ -28,6 +28,7 @@
   },
   "packageManager": "yarn@1.22.22",
   "dependencies": {
+    "@anthropic-ai/claude-code": "^2.0.76",
     "@emotion/cache": "^11.14.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",

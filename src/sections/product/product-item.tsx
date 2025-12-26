@@ -26,7 +26,7 @@ export type ProductItemProps = {
   coverUrl: string;
   colors: string[];
   priceSale: number | null;
-  images?: string[];
+  images: string[];
   description?: string;
   stock?: number;
   category?: string;
@@ -48,7 +48,7 @@ export function ProductItem({ product }: { product: ProductItemProps }) {
     name: product.name,
     price: product.price,
     status: product.status,
-    images: product.images || [product.coverUrl],
+    images: product.images,
     colors: product.colors,
     priceSale: product.priceSale,
     description: product.description,
@@ -152,6 +152,7 @@ export function ProductItem({ product }: { product: ProductItemProps }) {
         />
         <IconButton
           onClick={handleQuickView}
+          disabled={!product.images || product.images.length === 0}
           sx={{
             position: 'absolute',
             top: 16,

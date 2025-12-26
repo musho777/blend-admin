@@ -279,6 +279,62 @@ class ApiService {
     });
   }
 
+  async createCategoryWithImage(formData: FormData): Promise<Category> {
+    const url = `${API_BASE_URL}/categories`;
+
+    const headers: HeadersInit = {};
+
+    if (this.token) {
+      (headers as Record<string, string>).Authorization = `Bearer ${this.token}`;
+    }
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('API request failed:', error);
+      throw error;
+    }
+  }
+
+  async updateCategoryWithImage(id: string, formData: FormData): Promise<Category> {
+    const url = `${API_BASE_URL}/categories/${id}`;
+
+    const headers: HeadersInit = {};
+
+    if (this.token) {
+      (headers as Record<string, string>).Authorization = `Bearer ${this.token}`;
+    }
+
+    try {
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers,
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('API request failed:', error);
+      throw error;
+    }
+  }
+
   // Orders
   async getOrders(params?: { status?: string; page?: number; limit?: number }): Promise<{
     orders: Order[];
