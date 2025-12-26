@@ -30,4 +30,9 @@ export const navData = [
     path: '/orders',
     icon: icon('ic-user'),
   },
+  {
+    title: 'Banners',
+    path: '/banners',
+    icon: icon('ic-blog'),
+  },
 ];

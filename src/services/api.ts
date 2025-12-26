@@ -32,6 +32,16 @@ export interface Category {
   image: string;
 }
 
+export interface Banner {
+  id: string;
+  image: string;
+  url: string;
+  text?: string;
+  priority?: number;
+  isActive?: boolean;
+  createdAt?: string;
+}
+
 export interface Order {
   id: string;
   orderNumber: string;
@@ -394,6 +404,81 @@ class ApiService {
 
   async getBestSelect(): Promise<Product[]> {
     return this.request<Product[]>('/home/best-select');
+  }
+
+  // Banners
+  async getBanners(): Promise<Banner[]> {
+    return this.request<Banner[]>('/banners');
+  }
+
+  async getBanner(id: string): Promise<Banner> {
+    return this.request<Banner>(`/banners/${id}`);
+  }
+
+  async createBannerWithImage(formData: FormData): Promise<Banner> {
+    const url = `${API_BASE_URL}/banners`;
+
+    const headers: HeadersInit = {};
+
+    if (this.token) {
+      (headers as Record<string, string>).Authorization = `Bearer ${this.token}`;
+    }
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('API request failed:', error);
+      throw error;
+    }
+  }
+
+  async updateBannerWithImage(id: string, formData: FormData): Promise<Banner> {
+    const url = `${API_BASE_URL}/banners/${id}`;
+
+    const headers: HeadersInit = {};
+
+    if (this.token) {
+      (headers as Record<string, string>).Authorization = `Bearer ${this.token}`;
+    }
+
+    try {
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers,
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('API request failed:', error);
+      throw error;
+    }
+  }
+
+  async deleteBanner(id: string): Promise<{ message: string }> {
+    return this.request<{ message: string }>(`/banners/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getActiveBanners(): Promise<Banner[]> {
+    return this.request<Banner[]>('/home/banners');
   }
 }
 
