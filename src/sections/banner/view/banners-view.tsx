@@ -187,7 +187,7 @@ export function BannersView() {
     [banners]
   );
 
-  const isFormValid = (editingBanner && formData.url) || (imagePreview && formData.url);
+  const isFormValid = !!imagePreview;
 
   return (
     <Container maxWidth="xl">
@@ -343,7 +343,7 @@ export function BannersView() {
                 <Box sx={{ position: 'relative' }}>
                   <Box
                     component="img"
-                    src={imagePreview}
+                    src={`http://localhost:3000/${imagePreview}`}
                     alt="Preview"
                     sx={{
                       width: '100%',
@@ -390,7 +390,6 @@ export function BannersView() {
               value={formData.url}
               onChange={(e) => setFormData((prev) => ({ ...prev, url: e.target.value }))}
               placeholder="https://example.com or /products"
-              required
             />
 
             {/* Text Field */}
@@ -430,9 +429,7 @@ export function BannersView() {
               label="Active"
             />
 
-            {!isFormValid && (
-              <Alert severity="warning">Please upload an image and provide a URL</Alert>
-            )}
+            {!isFormValid && <Alert severity="warning">Please upload an image</Alert>}
           </Stack>
         </DialogContent>
         <DialogActions>
