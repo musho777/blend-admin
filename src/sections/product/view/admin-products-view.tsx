@@ -1,4 +1,4 @@
-import type { Product, Category } from 'src/services/api';
+import type { Product, Category, Subcategory } from 'src/services/api';
 
 import { useState, useEffect, useCallback } from 'react';
 
@@ -41,6 +41,7 @@ interface ProductFormData {
   price: number;
   stock: number;
   categoryId: string;
+  subcategoryId: string;
   isFeatured?: boolean;
   isBestSeller?: boolean;
   isBestSelect?: boolean;
@@ -62,6 +63,8 @@ interface PaginationMeta {
 export function AdminProductsView() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
+  const [filteredSubcategories, setFilteredSubcategories] = useState<Subcategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [openDialog, setOpenDialog] = useState(false);
@@ -76,6 +79,7 @@ export function AdminProductsView() {
     price: 0,
     stock: 0,
     categoryId: '',
+    subcategoryId: '',
     isFeatured: false,
     isBestSeller: false,
     isBestSelect: false,
@@ -123,10 +127,38 @@ export function AdminProductsView() {
     }
   }, []);
 
+  const fetchSubcategories = useCallback(async () => {
+    try {
+      const subcategoriesData = await apiService.getSubcategories();
+      setSubcategories(subcategoriesData);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch subcategories');
+    }
+  }, []);
+
   useEffect(() => {
     fetchProducts();
     fetchCategories();
-  }, [fetchProducts, fetchCategories]);
+    fetchSubcategories();
+  }, [fetchProducts, fetchCategories, fetchSubcategories]);
+
+  // Filter subcategories when category changes
+  useEffect(() => {
+    if (formData.categoryId) {
+      const filtered = subcategories.filter((sub) => sub.categoryId === formData.categoryId);
+      setFilteredSubcategories(filtered);
+
+      if (formData.subcategoryId) {
+        const isValid = filtered.some((sub) => sub.id === formData.subcategoryId);
+        if (!isValid) {
+          setFormData((prev) => ({ ...prev, subcategoryId: '' }));
+        }
+      }
+    } else {
+      setFilteredSubcategories([]);
+      setFormData((prev) => ({ ...prev, subcategoryId: '' }));
+    }
+  }, [formData.categoryId, subcategories, formData.subcategoryId]);
 
   const handleOpenDialog = (product?: Product) => {
     if (product) {
@@ -137,6 +169,7 @@ export function AdminProductsView() {
         price: product.price,
         stock: product.stock,
         categoryId: product.categoryId,
+        subcategoryId: product.subcategoryId || '',
         isFeatured: product.isFeatured || false,
         isBestSeller: product.isBestSeller || false,
         isBestSelect: product.isBestSelect || false,
@@ -153,6 +186,7 @@ export function AdminProductsView() {
         price: 0,
         stock: 0,
         categoryId: '',
+        subcategoryId: '',
         isFeatured: false,
         isBestSeller: false,
         isBestSelect: false,
@@ -201,6 +235,7 @@ export function AdminProductsView() {
       price: 0,
       stock: 0,
       categoryId: '',
+      subcategoryId: '',
       isFeatured: false,
       isBestSeller: false,
       isBestSelect: false,
@@ -280,6 +315,12 @@ export function AdminProductsView() {
       formDataToSend.append('price', Math.max(0, formData.price).toString());
       formDataToSend.append('stock', Math.max(0, formData.stock).toString());
       formDataToSend.append('categoryId', formData.categoryId);
+
+      // Add subcategoryId if selected
+      if (formData.subcategoryId) {
+        formDataToSend.append('subcategoryId', formData.subcategoryId);
+      }
+
       formDataToSend.append('isFeatured', formData.isFeatured ? 'true' : 'false');
       formDataToSend.append('isBestSeller', formData.isBestSeller ? 'true' : 'false');
       formDataToSend.append('isBestSelect', formData.isBestSelect ? 'true' : 'false');
@@ -321,9 +362,18 @@ export function AdminProductsView() {
     }
   };
 
-  const getCategoryName = (categoryId: string) => {
+  const getDisplayCategory = (categoryId: string, subcategoryId?: string | null) => {
     const category = categories.find((c) => c.id === categoryId);
-    return category ? category.title : 'Unknown';
+    const categoryName = category ? category.title : 'Unknown';
+
+    if (subcategoryId) {
+      const subcategory = subcategories.find((s) => s.id === subcategoryId);
+      if (subcategory) {
+        return `${categoryName} > ${subcategory.title}`;
+      }
+    }
+
+    return categoryName;
   };
 
   const convertToProductItem = (product: Product) => ({
@@ -343,7 +393,7 @@ export function AdminProductsView() {
       product.description ||
       `High-quality ${product.title} from our premium collection. Perfect for everyday use with excellent durability and style.`,
     stock: product.stock,
-    category: getCategoryName(product.categoryId),
+    category: getDisplayCategory(product.categoryId, product.subcategoryId),
   });
 
   const handleViewModeChange = (
@@ -377,7 +427,9 @@ export function AdminProductsView() {
     {
       key: 'categoryId',
       label: 'Category',
-      render: (value) => <Typography variant="body2">{getCategoryName(value)}</Typography>,
+      render: (value, row) => (
+        <Typography variant="body2">{getDisplayCategory(value, row.subcategoryId)}</Typography>
+      ),
     },
     {
       key: 'price',
@@ -659,6 +711,32 @@ export function AdminProductsView() {
                   </MenuItem>
                 ))}
               </Select>
+            </FormControl>
+
+            <FormControl fullWidth>
+              <InputLabel>Subcategory (Optional)</InputLabel>
+              <Select
+                value={formData.subcategoryId}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, subcategoryId: e.target.value }))
+                }
+                label="Subcategory (Optional)"
+                disabled={!formData.categoryId || filteredSubcategories.length === 0}
+              >
+                <MenuItem value="">
+                  <em>None</em>
+                </MenuItem>
+                {filteredSubcategories.map((subcategory) => (
+                  <MenuItem key={subcategory.id} value={subcategory.id}>
+                    {subcategory.title}
+                  </MenuItem>
+                ))}
+              </Select>
+              {formData.categoryId && filteredSubcategories.length === 0 && (
+                <Typography variant="caption" sx={{ color: 'text.secondary', mt: 1 }}>
+                  No subcategories available for this category
+                </Typography>
+              )}
             </FormControl>
 
             <Box>

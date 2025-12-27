@@ -18,6 +18,7 @@ export interface Product {
   price: number;
   stock: number;
   categoryId: string;
+  subcategoryId?: string | null;
   isFeatured?: boolean;
   isBestSeller?: boolean;
   isBestSelect?: boolean;
@@ -30,6 +31,14 @@ export interface Category {
   title: string;
   slug?: string;
   image: string;
+}
+
+export interface Subcategory {
+  id: string;
+  title: string;
+  categoryId: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Banner {
@@ -343,6 +352,42 @@ class ApiService {
       console.error('API request failed:', error);
       throw error;
     }
+  }
+
+  // Subcategories
+  async getSubcategories(): Promise<Subcategory[]> {
+    return this.request<Subcategory[]>('/subcategories');
+  }
+
+  async getSubcategory(id: string): Promise<Subcategory> {
+    return this.request<Subcategory>(`/subcategories/${id}`);
+  }
+
+  async getSubcategoriesByCategory(categoryId: string): Promise<Subcategory[]> {
+    return this.request<Subcategory[]>(`/categories/${categoryId}/subcategories`);
+  }
+
+  async createSubcategory(data: { title: string; categoryId: string }): Promise<Subcategory> {
+    return this.request<Subcategory>('/subcategories', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateSubcategory(
+    id: string,
+    data: { title?: string; categoryId?: string }
+  ): Promise<Subcategory> {
+    return this.request<Subcategory>(`/subcategories/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteSubcategory(id: string): Promise<{ message: string }> {
+    return this.request<{ message: string }>(`/subcategories/${id}`, {
+      method: 'DELETE',
+    });
   }
 
   // Orders
