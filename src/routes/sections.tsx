@@ -64,7 +64,7 @@ export const routesSection: RouteObject[] = [
       { path: 'subcategories', element: <SubcategoriesPage /> },
       { path: 'orders', element: <OrdersPage /> },
       { path: 'banners', element: <BannersPage /> },
-      { path: 'user', element: <UserPage /> },
+      { path: 'users', element: <UserPage /> },
       { path: 'blog', element: <BlogPage /> },
     ],
   },

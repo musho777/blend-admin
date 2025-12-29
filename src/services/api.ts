@@ -98,6 +98,16 @@ export interface DashboardStats {
   }>;
 }
 
+export interface User {
+  id: string;
+  email: string;
+  fullName?: string;
+  role: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 class ApiService {
   private token: string | null = null;
 
@@ -524,6 +534,15 @@ class ApiService {
 
   async getActiveBanners(): Promise<Banner[]> {
     return this.request<Banner[]>('/home/banners');
+  }
+
+  // Users
+  async getUsers(): Promise<User[]> {
+    return this.request<User[]>('/admin/users');
+  }
+
+  async getUser(id: string): Promise<User> {
+    return this.request<User>(`/admin/users/${id}`);
   }
 }
 

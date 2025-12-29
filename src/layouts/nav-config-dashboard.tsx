@@ -40,4 +40,9 @@ export const navData = [
     path: '/banners',
     icon: icon('ic-blog'),
   },
+  {
+    title: 'Users',
+    path: '/users',
+    icon: icon('ic-user'),
+  },
 ];
