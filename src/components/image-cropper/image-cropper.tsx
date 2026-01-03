@@ -20,7 +20,7 @@ interface ImageCropperProps {
   fileName: string;
 }
 
-const CROP_SIZE = 300;
+const CROP_SIZE = 800;
 const ASPECT_RATIO = 1;
 
 function getInitialCrop(mediaWidth: number, mediaHeight: number) {

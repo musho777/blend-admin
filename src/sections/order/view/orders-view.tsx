@@ -257,16 +257,11 @@ export function OrdersView() {
               </Box>
 
               <Typography variant="h6" gutterBottom>
-                Shipping Address
+                Address
               </Typography>
-              {/* <Typography variant="body2" sx={{ mb: 3 }}>
-                {selectedOrder.shippingAddress.street}
-                <br />
-                {selectedOrder.shippingAddress.city}, {selectedOrder.shippingAddress.state}{' '}
-                {selectedOrder.shippingAddress.zipCode}
-                <br />
-                {selectedOrder.shippingAddress.country}
-              </Typography> */}
+              <Typography variant="body2" sx={{ mb: 3 }}>
+                {selectedOrder?.customerAddress}
+              </Typography>
 
               <Typography variant="h6" gutterBottom>
                 Order Items
