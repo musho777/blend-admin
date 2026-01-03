@@ -45,6 +45,7 @@ interface ProductFormData {
   isFeatured?: boolean;
   isBestSeller?: boolean;
   isBestSelect?: boolean;
+  disabled?: boolean;
   priority?: number;
   image?: File[];
   existingImages?: string[];
@@ -83,6 +84,7 @@ export function AdminProductsView() {
     isFeatured: false,
     isBestSeller: false,
     isBestSelect: false,
+    disabled: false,
     priority: 0,
     image: [],
     existingImages: [],
@@ -173,6 +175,7 @@ export function AdminProductsView() {
         isFeatured: product.isFeatured || false,
         isBestSeller: product.isBestSeller || false,
         isBestSelect: product.isBestSelect || false,
+        disabled: product.disabled || false,
         priority: product.priority || 0,
         image: [],
         existingImages: product.imageUrls || [],
@@ -190,6 +193,7 @@ export function AdminProductsView() {
         isFeatured: false,
         isBestSeller: false,
         isBestSelect: false,
+        disabled: false,
         priority: 0,
         image: [],
         existingImages: [],
@@ -324,6 +328,7 @@ export function AdminProductsView() {
       formDataToSend.append('isFeatured', formData.isFeatured ? 'true' : 'false');
       formDataToSend.append('isBestSeller', formData.isBestSeller ? 'true' : 'false');
       formDataToSend.append('isBestSelect', formData.isBestSelect ? 'true' : 'false');
+      formDataToSend.append('disabled', formData.disabled ? 'true' : 'false');
       formDataToSend.append('priority', Math.max(0, formData.priority || 0).toString());
 
       formData.image?.forEach((file) => {
@@ -454,6 +459,11 @@ export function AdminProductsView() {
     {
       key: 'isBestSelect',
       label: 'Best Select',
+      render: (value) => <Typography variant="body2">{value ? '✓' : '—'}</Typography>,
+    },
+    {
+      key: 'disabled',
+      label: 'Disabled',
       render: (value) => <Typography variant="body2">{value ? '✓' : '—'}</Typography>,
     },
     {
@@ -775,6 +785,17 @@ export function AdminProductsView() {
                   />
                 }
                 label="Best Select"
+              />
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={formData.disabled || false}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, disabled: e.target.checked }))
+                    }
+                  />
+                }
+                label="Disabled"
               />
             </Box>
 

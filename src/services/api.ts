@@ -22,6 +22,7 @@ export interface Product {
   isFeatured?: boolean;
   isBestSeller?: boolean;
   isBestSelect?: boolean;
+  disabled?: boolean;
   priority?: number;
   imageUrls?: string[];
 }
