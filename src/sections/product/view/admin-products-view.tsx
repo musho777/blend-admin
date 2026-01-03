@@ -1020,10 +1020,10 @@ export function AdminProductsView() {
             Edit
           </MenuItem>
 
-          <MenuItem onClick={handleDeleteFromMenu} sx={{ color: 'error.main' }}>
+          {/* <MenuItem onClick={handleDeleteFromMenu} sx={{ color: 'error.main' }}>
             <Iconify icon="solar:trash-bin-trash-bold" />
             Delete
-          </MenuItem>
+          </MenuItem> */}
         </MenuList>
       </Popover>
 
