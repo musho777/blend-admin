@@ -76,8 +76,7 @@ function getCroppedImg(image: HTMLImageElement, crop: Crop): Promise<Blob> {
         }
         resolve(blob);
       },
-      'image/jpeg',
-      0.9
+      'image/png'
     );
   });
 }
@@ -117,7 +116,7 @@ export function ImageCropper({
     try {
       const croppedBlob = await getCroppedImg(imgRef.current, completedCrop);
       const croppedFile = new File([croppedBlob], fileName, {
-        type: 'image/jpeg',
+        type: 'image/png',
         lastModified: Date.now(),
       });
       onCropComplete(croppedFile);
