@@ -7,8 +7,6 @@ import Card from '@mui/material/Card';
 import Chip from '@mui/material/Chip';
 import Table from '@mui/material/Table';
 import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
 import Select from '@mui/material/Select';
 import TableRow from '@mui/material/TableRow';
 import MenuItem from '@mui/material/MenuItem';
@@ -18,12 +16,10 @@ import TableCell from '@mui/material/TableCell';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import InputLabel from '@mui/material/InputLabel';
-import DialogTitle from '@mui/material/DialogTitle';
 import FormControl from '@mui/material/FormControl';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
 import TableContainer from '@mui/material/TableContainer';
 import CircularProgress from '@mui/material/CircularProgress';
+import { Dialog, Button, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 
 import { apiService } from 'src/services/api';
 
@@ -35,18 +31,14 @@ import { Scrollbar } from 'src/components/scrollbar';
 const STATUS_OPTIONS = [
   { value: '', label: 'All Status' },
   { value: 'pending', label: 'Pending' },
-  { value: 'processing', label: 'Processing' },
-  { value: 'shipped', label: 'Shipped' },
-  { value: 'delivered', label: 'Delivered' },
-  { value: 'cancelled', label: 'Cancelled' },
+  { value: 'rejected', label: 'Rejected' },
+  { value: 'success', label: 'Success' },
 ];
 
 const STATUS_COLORS = {
   pending: 'warning',
-  processing: 'info',
-  shipped: 'primary',
-  delivered: 'success',
-  cancelled: 'error',
+  rejected: 'error',
+  success: 'success',
 } as const;
 
 export function OrdersView() {
@@ -175,7 +167,7 @@ export function OrdersView() {
                   orders.map((order) => (
                     <TableRow key={order.id} hover>
                       <TableCell>
-                        <Typography variant="subtitle2">{order.orderNumber}</Typography>
+                        <Typography variant="subtitle2">{order.id}</Typography>
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2">{order.customerName}</Typography>
@@ -184,7 +176,8 @@ export function OrdersView() {
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        <Typography variant="subtitle2">${order.total.toFixed(2)}</Typography>
+                        {console.log(order)}
+                        <Typography variant="subtitle2">${order.totalPrice.toFixed(2)}</Typography>
                       </TableCell>
                       <TableCell>
                         <Chip
@@ -266,14 +259,14 @@ export function OrdersView() {
               <Typography variant="h6" gutterBottom>
                 Shipping Address
               </Typography>
-              <Typography variant="body2" sx={{ mb: 3 }}>
+              {/* <Typography variant="body2" sx={{ mb: 3 }}>
                 {selectedOrder.shippingAddress.street}
                 <br />
                 {selectedOrder.shippingAddress.city}, {selectedOrder.shippingAddress.state}{' '}
                 {selectedOrder.shippingAddress.zipCode}
                 <br />
                 {selectedOrder.shippingAddress.country}
-              </Typography>
+              </Typography> */}
 
               <Typography variant="h6" gutterBottom>
                 Order Items
@@ -291,44 +284,12 @@ export function OrdersView() {
                   <TableBody>
                     {selectedOrder.items.map((item, index) => (
                       <TableRow key={index}>
-                        <TableCell>{item.productTitle}</TableCell>
+                        <TableCell>{item.name}</TableCell>
                         <TableCell align="right">${item.price.toFixed(2)}</TableCell>
                         <TableCell align="right">{item.quantity}</TableCell>
-                        <TableCell align="right">${item.totalPrice.toFixed(2)}</TableCell>
+                        <TableCell align="right">${item.subtotal.toFixed(2)}</TableCell>
                       </TableRow>
                     ))}
-                    <TableRow>
-                      <TableCell colSpan={3}>
-                        <strong>Subtotal:</strong>
-                      </TableCell>
-                      <TableCell align="right">
-                        <strong>${selectedOrder.subtotal.toFixed(2)}</strong>
-                      </TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell colSpan={3}>
-                        <strong>Tax:</strong>
-                      </TableCell>
-                      <TableCell align="right">
-                        <strong>${selectedOrder.tax.toFixed(2)}</strong>
-                      </TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell colSpan={3}>
-                        <strong>Shipping:</strong>
-                      </TableCell>
-                      <TableCell align="right">
-                        <strong>${selectedOrder.shippingCost.toFixed(2)}</strong>
-                      </TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell colSpan={3}>
-                        <strong>Total:</strong>
-                      </TableCell>
-                      <TableCell align="right">
-                        <strong>${selectedOrder.total.toFixed(2)}</strong>
-                      </TableCell>
-                    </TableRow>
                   </TableBody>
                 </Table>
               </TableContainer>
