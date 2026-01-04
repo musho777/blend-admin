@@ -86,11 +86,13 @@ export interface DashboardStats {
   totalOrders: number;
   totalRevenue: number;
   ordersByStatus: {
-    pending: number;
-    processing: number;
-    shipped: number;
-    delivered: number;
-    cancelled: number;
+    pending?: number;
+    processing?: number;
+    shipped?: number;
+    delivered?: number;
+    cancelled?: number;
+    rejected?: number;
+    success?: number;
   };
   monthlyRevenue: Array<{
     month: string;

@@ -107,13 +107,13 @@ export function AdminDashboardView() {
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                Processing Orders
+                Success Orders
               </Typography>
-              <Typography variant="h3" color="info.main">
-                {stats?.ordersByStatus?.processing || 0}
+              <Typography variant="h3" color="success.main">
+                {stats?.ordersByStatus?.success || 0}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Orders being processed
+                Successfully completed orders
               </Typography>
             </CardContent>
           </Card>
@@ -137,33 +137,17 @@ export function AdminDashboardView() {
                 <Box
                   sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
                 >
-                  <Typography variant="body2">Processing:</Typography>
-                  <Typography variant="h6" color="info.main">
-                    {stats?.ordersByStatus?.processing || 0}
-                  </Typography>
-                </Box>
-                <Box
-                  sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-                >
-                  <Typography variant="body2">Shipped:</Typography>
-                  <Typography variant="h6" color="primary.main">
-                    {stats?.ordersByStatus?.shipped || 0}
-                  </Typography>
-                </Box>
-                <Box
-                  sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-                >
-                  <Typography variant="body2">Delivered:</Typography>
+                  <Typography variant="body2">Success:</Typography>
                   <Typography variant="h6" color="success.main">
-                    {stats?.ordersByStatus?.delivered || 0}
+                    {stats?.ordersByStatus?.success || 0}
                   </Typography>
                 </Box>
                 <Box
                   sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
                 >
-                  <Typography variant="body2">Cancelled:</Typography>
+                  <Typography variant="body2">Rejected:</Typography>
                   <Typography variant="h6" color="error.main">
-                    {stats?.ordersByStatus?.cancelled || 0}
+                    {stats?.ordersByStatus?.rejected || 0}
                   </Typography>
                 </Box>
               </Box>
