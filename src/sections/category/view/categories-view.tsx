@@ -371,11 +371,7 @@ export function CategoriesView() {
           <Button
             onClick={handleSubmit}
             variant="contained"
-            disabled={
-              submitting ||
-              !formData.title ||
-              (!formData.image && !formData.existingImage)
-            }
+            disabled={submitting || !formData.title || (!formData.image && !formData.existingImage)}
             startIcon={submitting ? <CircularProgress size={20} /> : null}
           >
             {submitting ? 'Saving...' : editingCategory ? 'Update' : 'Create'}
@@ -390,6 +386,8 @@ export function CategoriesView() {
           onCropComplete={handleCropComplete}
           imageSrc={imageToProcess.src}
           fileName={imageToProcess.file.name}
+          cropWidth={800}
+          cropHeight={450}
         />
       )}
     </Box>

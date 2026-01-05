@@ -18,22 +18,24 @@ interface ImageCropperProps {
   onCropComplete: (croppedFile: File) => void;
   imageSrc: string;
   fileName: string;
+  cropWidth?: number;
+  cropHeight?: number;
 }
 
-const CROP_SIZE = 800;
-const ASPECT_RATIO = 1;
+const DEFAULT_CROP_SIZE = 800;
+const DEFAULT_ASPECT_RATIO = 1;
 
-function getInitialCrop(mediaWidth: number, mediaHeight: number) {
+function getInitialCrop(mediaWidth: number, mediaHeight: number, cropWidth: number, cropHeight: number) {
   return {
     unit: 'px' as const,
     x: 10,
     y: 10,
-    width: CROP_SIZE,
-    height: CROP_SIZE,
+    width: cropWidth,
+    height: cropHeight,
   };
 }
 
-function getCroppedImg(image: HTMLImageElement, crop: Crop): Promise<Blob> {
+function getCroppedImg(image: HTMLImageElement, crop: Crop, cropWidth: number, cropHeight: number): Promise<Blob> {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
 
@@ -51,8 +53,8 @@ function getCroppedImg(image: HTMLImageElement, crop: Crop): Promise<Blob> {
     height: crop.height * scaleY,
   };
 
-  canvas.width = CROP_SIZE;
-  canvas.height = CROP_SIZE;
+  canvas.width = cropWidth;
+  canvas.height = cropHeight;
 
   ctx.imageSmoothingQuality = 'high';
 
@@ -64,8 +66,8 @@ function getCroppedImg(image: HTMLImageElement, crop: Crop): Promise<Blob> {
     pixelCrop.height,
     0,
     0,
-    CROP_SIZE,
-    CROP_SIZE
+    cropWidth,
+    cropHeight
   );
 
   return new Promise((resolve) => {
@@ -87,25 +89,29 @@ export function ImageCropper({
   onCropComplete,
   imageSrc,
   fileName,
+  cropWidth = DEFAULT_CROP_SIZE,
+  cropHeight = DEFAULT_CROP_SIZE,
 }: ImageCropperProps) {
   const [crop, setCrop] = useState<Crop>();
   const [completedCrop, setCompletedCrop] = useState<Crop>();
   const [error, setError] = useState('');
   const imgRef = useRef<HTMLImageElement>(null);
 
+  const aspectRatio = cropWidth / cropHeight;
+
   const onImageLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
     const { naturalWidth: width, naturalHeight: height } = e.currentTarget;
 
-    if (width < CROP_SIZE || height < CROP_SIZE) {
-      setError(`Image too small. Minimum dimensions: 100x100px`);
+    if (width < cropWidth || height < cropHeight) {
+      setError(`Image too small. Minimum dimensions: ${cropWidth}x${cropHeight}px`);
       return;
     }
 
     setError('');
-    const crops = getInitialCrop(width, height);
+    const crops = getInitialCrop(width, height, cropWidth, cropHeight);
     setCrop(crops);
     setCompletedCrop(crops);
-  }, []);
+  }, [cropWidth, cropHeight]);
 
   const handleCropComplete = async () => {
     if (!imgRef.current || !completedCrop) {
@@ -114,7 +120,7 @@ export function ImageCropper({
     }
 
     try {
-      const croppedBlob = await getCroppedImg(imgRef.current, completedCrop);
+      const croppedBlob = await getCroppedImg(imgRef.current, completedCrop, cropWidth, cropHeight);
       const croppedFile = new File([croppedBlob], fileName, {
         type: 'image/png',
         lastModified: Date.now(),
@@ -139,8 +145,7 @@ export function ImageCropper({
       <DialogContent>
         <Box sx={{ p: 2 }}>
           <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-            Drag to select the crop area. The image will be resized to {CROP_SIZE}px width
-            maintaining the original aspect ratio.
+            Drag to select the crop area. The image will be resized to {cropWidth}x{cropHeight}px.
           </Typography>
 
           {error && (
@@ -154,11 +159,11 @@ export function ImageCropper({
               crop={crop}
               onChange={(_, percentCrop) => setCrop(percentCrop)}
               onComplete={(c) => setCompletedCrop(c)}
-              aspect={ASPECT_RATIO}
-              minWidth={CROP_SIZE}
-              minHeight={CROP_SIZE}
-              maxWidth={CROP_SIZE}
-              maxHeight={CROP_SIZE}
+              aspect={aspectRatio}
+              minWidth={cropWidth}
+              minHeight={cropHeight}
+              maxWidth={cropWidth}
+              maxHeight={cropHeight}
               keepSelection
               ruleOfThirds
               locked
@@ -174,7 +179,7 @@ export function ImageCropper({
           </Box>
 
           <Typography variant="caption" color="textSecondary">
-            Final image will be CROP_SIZExCROP_SIZE pixels
+            Final image will be {cropWidth}x{cropHeight} pixels
           </Typography>
         </Box>
       </DialogContent>
