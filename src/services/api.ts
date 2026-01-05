@@ -104,9 +104,11 @@ export interface DashboardStats {
 export interface User {
   id: string;
   email: string;
-  fullName?: string;
-  role: string;
-  isActive: boolean;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  googleId: string | null;
+  isVerified: boolean;
   createdAt: string;
   updatedAt: string;
 }

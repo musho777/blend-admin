@@ -1,27 +1,22 @@
 import { useState, useCallback } from 'react';
 
-import Box from '@mui/material/Box';
-import Avatar from '@mui/material/Avatar';
 import Popover from '@mui/material/Popover';
 import TableRow from '@mui/material/TableRow';
-import Checkbox from '@mui/material/Checkbox';
 import MenuList from '@mui/material/MenuList';
 import TableCell from '@mui/material/TableCell';
 import IconButton from '@mui/material/IconButton';
 import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
 
-import { Label } from 'src/components/label';
 import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
 export type UserProps = {
   id: string;
-  name: string;
-  role: string;
-  status: string;
-  company: string;
-  avatarUrl: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
   isVerified: boolean;
 };
 
@@ -45,26 +40,19 @@ export function UserTableRow({ row, selected, onSelectRow }: UserTableRowProps) 
   return (
     <>
       <TableRow hover tabIndex={-1} role="checkbox" selected={selected}>
-        <TableCell padding="checkbox">
+        {/* <TableCell padding="checkbox">
           <Checkbox disableRipple checked={selected} onChange={onSelectRow} />
-        </TableCell>
+        </TableCell> */}
 
         <TableCell component="th" scope="row">
-          <Box
-            sx={{
-              gap: 2,
-              display: 'flex',
-              alignItems: 'center',
-            }}
-          >
-            <Avatar alt={row.name} src={row.avatarUrl} />
-            {row.name}
-          </Box>
+          {row.firstName}
         </TableCell>
 
-        <TableCell>{row.company}</TableCell>
+        <TableCell>{row.lastName}</TableCell>
 
-        <TableCell>{row.role}</TableCell>
+        <TableCell>{row.email}</TableCell>
+
+        <TableCell>{row.phone}</TableCell>
 
         <TableCell align="center">
           {row.isVerified ? (
@@ -72,10 +60,6 @@ export function UserTableRow({ row, selected, onSelectRow }: UserTableRowProps) 
           ) : (
             '-'
           )}
-        </TableCell>
-
-        <TableCell>
-          <Label color={(row.status === 'banned' && 'error') || 'success'}>{row.status}</Label>
         </TableCell>
 
         <TableCell align="right">
@@ -113,10 +97,10 @@ export function UserTableRow({ row, selected, onSelectRow }: UserTableRowProps) 
             Edit
           </MenuItem>
 
-          <MenuItem onClick={handleClosePopover} sx={{ color: 'error.main' }}>
+          {/* <MenuItem onClick={handleClosePopover} sx={{ color: 'error.main' }}>
             <Iconify icon="solar:trash-bin-trash-bold" />
             Delete
-          </MenuItem>
+          </MenuItem> */}
         </MenuList>
       </Popover>
     </>

@@ -14,7 +14,6 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { type User, apiService } from 'src/services/api';
 
-import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
 
 import { TableNoData } from '../table-no-data';
@@ -32,12 +31,11 @@ import type { UserProps } from '../user-table-row';
 function transformUserToUserProps(user: User): UserProps {
   return {
     id: user.id,
-    name: user.fullName || user.email,
-    role: user.role,
-    status: user.isActive ? 'active' : 'banned',
-    company: '-',
-    avatarUrl: '',
-    isVerified: user.isActive,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email,
+    phone: user.phone,
+    isVerified: user.isVerified,
   };
 }
 
@@ -118,13 +116,13 @@ export function UserView() {
         <Typography variant="h4" sx={{ flexGrow: 1 }}>
           Users
         </Typography>
-        <Button
+        {/* <Button
           variant="contained"
           color="inherit"
           startIcon={<Iconify icon="mingcute:add-line" />}
         >
           New user
-        </Button>
+        </Button> */}
       </Box>
 
       <Card>
@@ -153,11 +151,11 @@ export function UserView() {
                   )
                 }
                 headLabel={[
-                  { id: 'name', label: 'Name' },
-                  { id: 'company', label: 'Company' },
-                  { id: 'role', label: 'Role' },
+                  { id: 'firstName', label: 'First Name' },
+                  { id: 'lastName', label: 'Last Name' },
+                  { id: 'email', label: 'Email' },
+                  { id: 'phone', label: 'Phone' },
                   { id: 'isVerified', label: 'Verified', align: 'center' },
-                  { id: 'status', label: 'Status' },
                   { id: '' },
                 ]}
               />
