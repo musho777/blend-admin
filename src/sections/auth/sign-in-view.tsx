@@ -130,7 +130,7 @@ export function SignInView() {
           mb: 5,
         }}
       >
-        <Typography variant="h5">Admin Panel</Typography>
+        <Typography variant="h5">Admin Panel2</Typography>
         <Typography
           variant="body2"
           sx={{
