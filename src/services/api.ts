@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:3000';
+const API_BASE_URL = 'https://blend-backend-production-0649.up.railway.app';
 
 export interface LoginCredentials {
   email: string;
