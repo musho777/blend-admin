@@ -197,7 +197,7 @@ export function BannersView() {
           <Typography variant="h4">Banners</Typography>
           <Button
             variant="contained"
-            startIcon={<Iconify icon={"eva:plus-fill" as any} />}
+            startIcon={<Iconify icon={'eva:plus-fill' as any} />}
             onClick={handleOpenDialog}
             disabled={loading}
           >
@@ -265,7 +265,7 @@ export function BannersView() {
                             <TableCell>
                               <Box
                                 component="img"
-                                src={`http://localhost:3000/${banner.image}`}
+                                src={`https://blend-backend-production-0649.up.railway.app/${banner.image}`}
                                 alt={banner.text || 'Banner'}
                                 sx={{
                                   width: 120,
@@ -307,14 +307,14 @@ export function BannersView() {
                             </TableCell>
                             <TableCell align="right">
                               <IconButton onClick={() => handleEdit(banner)} size="small">
-                                <Iconify icon={"eva:edit-fill" as any} />
+                                <Iconify icon={'eva:edit-fill' as any} />
                               </IconButton>
                               <IconButton
                                 onClick={() => handleDelete(banner.id)}
                                 size="small"
                                 color="error"
                               >
-                                <Iconify icon={"eva:trash-2-outline" as any} />
+                                <Iconify icon={'eva:trash-2-outline' as any} />
                               </IconButton>
                             </TableCell>
                           </TableRow>
@@ -343,7 +343,7 @@ export function BannersView() {
                 <Box sx={{ position: 'relative' }}>
                   <Box
                     component="img"
-                    src={`http://localhost:3000/${imagePreview}`}
+                    src={`https://blend-backend-production-0649.up.railway.app/${imagePreview}`}
                     alt="Preview"
                     sx={{
                       width: '100%',
@@ -366,7 +366,7 @@ export function BannersView() {
                       bgcolor: 'background.paper',
                     }}
                   >
-                    <Iconify icon={"eva:close-fill" as any} />
+                    <Iconify icon={'eva:close-fill' as any} />
                   </IconButton>
                 </Box>
               ) : (
@@ -374,7 +374,7 @@ export function BannersView() {
                   variant="outlined"
                   component="label"
                   fullWidth
-                  startIcon={<Iconify icon={"eva:cloud-upload-fill" as any} />}
+                  startIcon={<Iconify icon={'eva:cloud-upload-fill' as any} />}
                   sx={{ height: 120 }}
                 >
                   Upload Image

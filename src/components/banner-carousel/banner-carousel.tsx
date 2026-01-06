@@ -79,7 +79,7 @@ export function BannerCarousel({ banners, autoPlayInterval = 5000 }: BannerCarou
       >
         <Box
           component="img"
-          src={`http://localhost:3000/${currentBanner.image}`}
+          src={`https://blend-backend-production-0649.up.railway.app/${currentBanner.image}`}
           alt={currentBanner.text || 'Banner'}
           sx={{
             width: '100%',
@@ -134,7 +134,7 @@ export function BannerCarousel({ banners, autoPlayInterval = 5000 }: BannerCarou
               },
             }}
           >
-            <Iconify icon={"eva:arrow-ios-back-fill" as any} />
+            <Iconify icon={'eva:arrow-ios-back-fill' as any} />
           </IconButton>
 
           <IconButton
