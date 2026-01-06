@@ -31,14 +31,18 @@ import { Scrollbar } from 'src/components/scrollbar';
 const STATUS_OPTIONS = [
   { value: '', label: 'All Status' },
   { value: 'pending', label: 'Pending' },
-  { value: 'rejected', label: 'Rejected' },
-  { value: 'success', label: 'Success' },
+  { value: 'processing', label: 'Processing' },
+  { value: 'shipped', label: 'Shipped' },
+  { value: 'delivered', label: 'Delivered' },
+  { value: 'cancelled', label: 'Cancelled' },
 ];
 
 const STATUS_COLORS = {
   pending: 'warning',
-  rejected: 'error',
-  success: 'success',
+  processing: 'info',
+  shipped: 'primary',
+  delivered: 'success',
+  cancelled: 'error',
 } as const;
 
 export function OrdersView() {
@@ -176,8 +180,7 @@ export function OrdersView() {
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        {console.log(order)}
-                        <Typography variant="subtitle2">${order.totalPrice.toFixed(2)}</Typography>
+                        <Typography variant="subtitle2">${order.total.toFixed(2)}</Typography>
                       </TableCell>
                       <TableCell>
                         <Chip
@@ -257,10 +260,16 @@ export function OrdersView() {
               </Box>
 
               <Typography variant="h6" gutterBottom>
-                Address
+                Shipping Address
               </Typography>
               <Typography variant="body2" sx={{ mb: 3 }}>
-                {selectedOrder?.customerAddress}
+                {selectedOrder?.shippingAddress && (
+                  <>
+                    {selectedOrder.shippingAddress.street}, {selectedOrder.shippingAddress.city},{' '}
+                    {selectedOrder.shippingAddress.state} {selectedOrder.shippingAddress.zipCode},{' '}
+                    {selectedOrder.shippingAddress.country}
+                  </>
+                )}
               </Typography>
 
               <Typography variant="h6" gutterBottom>
@@ -279,10 +288,10 @@ export function OrdersView() {
                   <TableBody>
                     {selectedOrder.items.map((item, index) => (
                       <TableRow key={index}>
-                        <TableCell>{item.name}</TableCell>
+                        <TableCell>{item.productTitle}</TableCell>
                         <TableCell align="right">${item.price.toFixed(2)}</TableCell>
                         <TableCell align="right">{item.quantity}</TableCell>
-                        <TableCell align="right">${item.subtotal.toFixed(2)}</TableCell>
+                        <TableCell align="right">${item.totalPrice.toFixed(2)}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>

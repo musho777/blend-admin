@@ -134,7 +134,7 @@ export function BannerCarousel({ banners, autoPlayInterval = 5000 }: BannerCarou
               },
             }}
           >
-            <Iconify icon="eva:arrow-ios-back-fill" />
+            <Iconify icon={"eva:arrow-ios-back-fill" as any} />
           </IconButton>
 
           <IconButton
