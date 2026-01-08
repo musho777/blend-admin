@@ -30,18 +30,14 @@ import { Scrollbar } from 'src/components/scrollbar';
 const STATUS_OPTIONS = [
   { value: '', label: 'All Status' },
   { value: 'pending', label: 'Pending' },
-  { value: 'processing', label: 'Processing' },
-  { value: 'shipped', label: 'Shipped' },
-  { value: 'delivered', label: 'Delivered' },
-  { value: 'cancelled', label: 'Cancelled' },
+  { value: 'rejected', label: 'Rejected' },
+  { value: 'success', label: 'Success' },
 ];
 
 const STATUS_COLORS = {
   pending: 'warning',
-  processing: 'info',
-  shipped: 'primary',
-  delivered: 'success',
-  cancelled: 'error',
+  rejected: 'error',
+  success: 'success',
 } as const;
 
 export function OrdersView() {

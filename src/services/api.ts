@@ -68,16 +68,18 @@ export interface Order {
   items: Array<{
     productId: string;
     productTitle: string;
+    name: string;
     price: number;
     quantity: number;
     totalPrice: number;
+    subtotal: number;
   }>;
   subtotal: number;
   tax: number;
   shippingCost: number;
   totalPrice: number;
   name: string;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  status: 'pending' | 'rejected' | 'success';
   paymentMethod: string;
   createdAt: string;
   updatedAt: string;
