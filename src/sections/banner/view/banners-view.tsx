@@ -50,6 +50,7 @@ export function BannersView() {
   const [openCropper, setOpenCropper] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   // Fetch banners on component mount
   useEffect(() => {
@@ -81,6 +82,7 @@ export function BannersView() {
       isActive: true,
     });
     setImagePreview('');
+    setFormError(null);
   }, []);
 
   const handleCloseDialog = useCallback(() => {
@@ -94,6 +96,7 @@ export function BannersView() {
       isActive: true,
     });
     setImagePreview('');
+    setFormError(null);
   }, []);
 
   const handleEdit = useCallback((banner: Banner) => {
@@ -106,6 +109,7 @@ export function BannersView() {
       isActive: banner.isActive ?? true,
     });
     setImagePreview(banner.image);
+    setFormError(null);
     setOpenDialog(true);
   }, []);
 
@@ -127,6 +131,7 @@ export function BannersView() {
   const handleSubmit = useCallback(async () => {
     try {
       setSubmitting(true);
+      setFormError(null);
       const formDataToSend = new FormData();
 
       if (formData.image) {
@@ -148,9 +153,17 @@ export function BannersView() {
       }
 
       handleCloseDialog();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to save banner:', err);
-      alert('Failed to save banner. Please try again.');
+
+      // Extract error message from the response
+      let errorMessage = 'Failed to save banner. Please try again.';
+
+      if (err?.message) {
+        errorMessage = err.message;
+      }
+
+      setFormError(errorMessage);
     } finally {
       setSubmitting(false);
     }
@@ -334,6 +347,12 @@ export function BannersView() {
         <DialogTitle>{editingBanner ? 'Edit Banner' : 'New Banner'}</DialogTitle>
         <DialogContent>
           <Stack spacing={3} sx={{ mt: 1 }}>
+            {/* Error Alert */}
+            {formError && (
+              <Alert severity="error" onClose={() => setFormError(null)}>
+                {formError}
+              </Alert>
+            )}
             {/* Image Upload */}
             <Box>
               <Typography variant="subtitle2" sx={{ mb: 1 }}>
