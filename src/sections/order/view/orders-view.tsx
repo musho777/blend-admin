@@ -6,7 +6,6 @@ import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Chip from '@mui/material/Chip';
 import Table from '@mui/material/Table';
-import Alert from '@mui/material/Alert';
 import Select from '@mui/material/Select';
 import TableRow from '@mui/material/TableRow';
 import MenuItem from '@mui/material/MenuItem';
@@ -134,12 +133,6 @@ export function OrdersView() {
         </FormControl>
       </Box>
 
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
-        </Alert>
-      )}
-
       <Card>
         <Scrollbar>
           <TableContainer sx={{ overflow: 'unset' }}>
@@ -180,7 +173,7 @@ export function OrdersView() {
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        <Typography variant="subtitle2">${order.total.toFixed(2)}</Typography>
+                        <Typography variant="subtitle2">${order.totalPrice?.toFixed(2)}</Typography>
                       </TableCell>
                       <TableCell>
                         <Chip
@@ -282,7 +275,7 @@ export function OrdersView() {
                       <TableCell>Product</TableCell>
                       <TableCell align="right">Price</TableCell>
                       <TableCell align="right">Qty</TableCell>
-                      <TableCell align="right">Total</TableCell>
+                      <TableCell align="right">totalPrice</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>

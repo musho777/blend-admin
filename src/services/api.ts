@@ -75,7 +75,7 @@ export interface Order {
   subtotal: number;
   tax: number;
   shippingCost: number;
-  total: number;
+  totalPrice: number;
   status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
   paymentMethod: string;
   createdAt: string;
