@@ -281,10 +281,10 @@ export function OrdersView() {
                   <TableBody>
                     {selectedOrder.items.map((item, index) => (
                       <TableRow key={index}>
-                        <TableCell>{item.productTitle}</TableCell>
+                        <TableCell>{item.name}</TableCell>
                         <TableCell align="right">${item.price.toFixed(2)}</TableCell>
                         <TableCell align="right">{item.quantity}</TableCell>
-                        <TableCell align="right">${item.totalPrice.toFixed(2)}</TableCell>
+                        <TableCell align="right">${item.subtotal.toFixed(2)}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>

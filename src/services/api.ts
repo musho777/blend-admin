@@ -76,6 +76,7 @@ export interface Order {
   tax: number;
   shippingCost: number;
   totalPrice: number;
+  name: string;
   status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
   paymentMethod: string;
   createdAt: string;
