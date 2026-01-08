@@ -151,8 +151,6 @@ export function CategoriesView() {
 
       if (formData.image) {
         formDataToSend.append('image', formData.image);
-      } else if (formData.existingImage) {
-        formDataToSend.append('existingImage', formData.existingImage);
       }
 
       if (editingCategory) {
