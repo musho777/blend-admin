@@ -439,7 +439,7 @@ export function AdminProductsView() {
     {
       key: 'price',
       label: 'Price',
-      render: (value) => <Typography variant="body2">${value.toFixed(2)}</Typography>,
+      render: (value) => <Typography variant="body2">{value.toFixed(2)} AMD</Typography>,
     },
     {
       key: 'stock',

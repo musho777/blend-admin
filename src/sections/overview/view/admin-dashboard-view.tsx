@@ -174,7 +174,7 @@ export function AdminDashboardView() {
                     >
                       <Typography variant="body2">{item.month}:</Typography>
                       <Typography variant="subtitle2">
-                        ${item.revenue.toFixed(2)} ({item.orders} orders)
+                        {item.revenue.toFixed(2)} AMD ({item.orders} orders)
                       </Typography>
                     </Box>
                   ))}

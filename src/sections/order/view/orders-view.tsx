@@ -169,7 +169,7 @@ export function OrdersView() {
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        <Typography variant="subtitle2">${order.totalPrice?.toFixed(2)}</Typography>
+                        <Typography variant="subtitle2">{order.totalPrice?.toFixed(2)} AMD</Typography>
                       </TableCell>
                       <TableCell>
                         <Chip
@@ -278,9 +278,9 @@ export function OrdersView() {
                     {selectedOrder.items.map((item, index) => (
                       <TableRow key={index}>
                         <TableCell>{item.name}</TableCell>
-                        <TableCell align="right">${item.price.toFixed(2)}</TableCell>
+                        <TableCell align="right">{item.price.toFixed(2)} AMD</TableCell>
                         <TableCell align="right">{item.quantity}</TableCell>
-                        <TableCell align="right">${item.subtotal.toFixed(2)}</TableCell>
+                        <TableCell align="right">{item.subtotal.toFixed(2)} AMD</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
