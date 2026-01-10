@@ -278,7 +278,7 @@ export function BannersView() {
                             <TableCell>
                               <Box
                                 component="img"
-                                src={`https://blend-backend-production-0649.up.railway.app/${banner.image}`}
+                                src={banner.image}
                                 alt={banner.text || 'Banner'}
                                 sx={{
                                   width: 120,
@@ -362,7 +362,7 @@ export function BannersView() {
                 <Box sx={{ position: 'relative' }}>
                   <Box
                     component="img"
-                    src={`https://blend-backend-production-0649.up.railway.app/${imagePreview}`}
+                    src={imagePreview}
                     alt="Preview"
                     sx={{
                       width: '100%',

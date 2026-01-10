@@ -79,7 +79,7 @@ export function BannerCarousel({ banners, autoPlayInterval = 5000 }: BannerCarou
       >
         <Box
           component="img"
-          src={`https://blend-backend-production-0649.up.railway.app/${currentBanner.image}`}
+          src={currentBanner?.image}
           alt={currentBanner.text || 'Banner'}
           sx={{
             width: '100%',

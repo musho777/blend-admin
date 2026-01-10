@@ -241,7 +241,7 @@ export function CategoriesView() {
                         {category.image ? (
                           <Box
                             component="img"
-                            src={`https://blend-backend-production-0649.up.railway.app/${category.image}`}
+                            src={category?.image}
                             alt={category.title}
                             sx={{
                               width: 48,
@@ -333,9 +333,7 @@ export function CategoriesView() {
                   <Box
                     component="img"
                     src={
-                      formData.image
-                        ? URL.createObjectURL(formData.image)
-                        : `https://blend-backend-production-0649.up.railway.app/${formData.existingImage}`
+                      formData.image ? URL.createObjectURL(formData.image) : formData.existingImage
                     }
                     alt="Category preview"
                     sx={{
