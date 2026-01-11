@@ -3,7 +3,9 @@ import type { Category, Subcategory } from 'src/services/api';
 import { useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
+import Tab from '@mui/material/Tab';
 import Card from '@mui/material/Card';
+import Tabs from '@mui/material/Tabs';
 import Table from '@mui/material/Table';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
@@ -34,6 +36,8 @@ import { Scrollbar } from 'src/components/scrollbar';
 
 interface SubcategoryFormData {
   title: string;
+  titleAm: string;
+  titleRu: string;
   categoryId: string;
 }
 
@@ -46,9 +50,12 @@ export function SubcategoriesView() {
   const [editingSubcategory, setEditingSubcategory] = useState<Subcategory | null>(null);
   const [formData, setFormData] = useState<SubcategoryFormData>({
     title: '',
+    titleAm: '',
+    titleRu: '',
     categoryId: '',
   });
   const [submitting, setSubmitting] = useState(false);
+  const [activeLanguageTab, setActiveLanguageTab] = useState<'en' | 'am' | 'ru'>('en');
 
   const fetchSubcategories = useCallback(async () => {
     try {
@@ -82,23 +89,31 @@ export function SubcategoriesView() {
       setEditingSubcategory(subcategory);
       setFormData({
         title: subcategory.title,
+        titleAm: (subcategory as any).titleAm || '',
+        titleRu: (subcategory as any).titleRu || '',
         categoryId: subcategory.categoryId,
       });
     } else {
       setEditingSubcategory(null);
       setFormData({
         title: '',
+        titleAm: '',
+        titleRu: '',
         categoryId: '',
       });
     }
+    setActiveLanguageTab('en');
     setOpenDialog(true);
   };
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setEditingSubcategory(null);
+    setActiveLanguageTab('en');
     setFormData({
       title: '',
+      titleAm: '',
+      titleRu: '',
       categoryId: '',
     });
   };
@@ -107,10 +122,23 @@ export function SubcategoriesView() {
     try {
       setSubmitting(true);
 
+      const dataToSend: any = {
+        title: formData.title,
+        categoryId: formData.categoryId,
+      };
+
+      // Add multi-language fields if they have values
+      if (formData.titleAm) {
+        dataToSend.titleAm = formData.titleAm;
+      }
+      if (formData.titleRu) {
+        dataToSend.titleRu = formData.titleRu;
+      }
+
       if (editingSubcategory) {
-        await apiService.updateSubcategory(editingSubcategory.id, formData);
+        await apiService.updateSubcategory(editingSubcategory.id, dataToSend);
       } else {
-        await apiService.createSubcategory(formData);
+        await apiService.createSubcategory(dataToSend);
       }
 
       await fetchSubcategories();
@@ -232,17 +260,85 @@ export function SubcategoriesView() {
         </Scrollbar>
       </Card>
 
-      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
+      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
         <DialogTitle>{editingSubcategory ? 'Edit Subcategory' : 'Add New Subcategory'}</DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 3 }}>
-            <TextField
-              fullWidth
-              label="Title"
-              value={formData.title}
-              onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
-              required
-            />
+            {/* Language Tabs */}
+            <Box>
+              <Typography variant="subtitle2" sx={{ mb: 2 }}>
+                Subcategory Title
+              </Typography>
+              <Tabs
+                value={activeLanguageTab}
+                onChange={(_, newValue) => setActiveLanguageTab(newValue)}
+                sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}
+              >
+                <Tab
+                  label={
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <span>🇬🇧</span>
+                      <span>English</span>
+                    </Box>
+                  }
+                  value="en"
+                />
+                <Tab
+                  label={
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <span>🇦🇲</span>
+                      <span>Armenian</span>
+                    </Box>
+                  }
+                  value="am"
+                />
+                <Tab
+                  label={
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <span>🇷🇺</span>
+                      <span>Russian</span>
+                    </Box>
+                  }
+                  value="ru"
+                />
+              </Tabs>
+
+              {/* English Fields */}
+              {activeLanguageTab === 'en' && (
+                <TextField
+                  fullWidth
+                  label="Title (English)"
+                  value={formData.title}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
+                  required
+                  placeholder="Enter subcategory title in English"
+                />
+              )}
+
+              {/* Armenian Fields */}
+              {activeLanguageTab === 'am' && (
+                <TextField
+                  fullWidth
+                  label="Անվանում (Armenian)"
+                  value={formData.titleAm}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, titleAm: e.target.value }))}
+                  placeholder="Մուտքագրեք ենթակատեգորիայի անվանումը հայերեն"
+                  helperText="Optional - Leave empty if not needed"
+                />
+              )}
+
+              {/* Russian Fields */}
+              {activeLanguageTab === 'ru' && (
+                <TextField
+                  fullWidth
+                  label="Название (Russian)"
+                  value={formData.titleRu}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, titleRu: e.target.value }))}
+                  placeholder="Введите название подкатегории на русском языке"
+                  helperText="Optional - Leave empty if not needed"
+                />
+              )}
+            </Box>
 
             <FormControl fullWidth required>
               <InputLabel>Category</InputLabel>

@@ -3,7 +3,9 @@ import type { Category } from 'src/services/api';
 import { useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
+import Tab from '@mui/material/Tab';
 import Card from '@mui/material/Card';
+import Tabs from '@mui/material/Tabs';
 import Table from '@mui/material/Table';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
@@ -31,6 +33,8 @@ import { ImageCropper } from 'src/components/image-cropper';
 
 interface CategoryFormData {
   title: string;
+  titleAm: string;
+  titleRu: string;
   image?: File;
   existingImage?: string;
   slug?: string;
@@ -44,6 +48,8 @@ export function CategoriesView() {
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [formData, setFormData] = useState<CategoryFormData>({
     title: '',
+    titleAm: '',
+    titleRu: '',
     image: undefined,
     existingImage: '',
     slug: '',
@@ -51,6 +57,7 @@ export function CategoriesView() {
   const [submitting, setSubmitting] = useState(false);
   const [cropperOpen, setCropperOpen] = useState(false);
   const [imageToProcess, setImageToProcess] = useState<{ file: File; src: string } | null>(null);
+  const [activeLanguageTab, setActiveLanguageTab] = useState<'en' | 'am' | 'ru'>('en');
 
   const fetchCategories = useCallback(async () => {
     try {
@@ -74,6 +81,8 @@ export function CategoriesView() {
       setEditingCategory(category);
       setFormData({
         title: category.title,
+        titleAm: (category as any).titleAm || '',
+        titleRu: (category as any).titleRu || '',
         image: undefined,
         existingImage: category.image,
         slug: category.slug || '',
@@ -82,19 +91,25 @@ export function CategoriesView() {
       setEditingCategory(null);
       setFormData({
         title: '',
+        titleAm: '',
+        titleRu: '',
         image: undefined,
         existingImage: '',
         slug: '',
       });
     }
+    setActiveLanguageTab('en');
     setOpenDialog(true);
   };
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setEditingCategory(null);
+    setActiveLanguageTab('en');
     setFormData({
       title: '',
+      titleAm: '',
+      titleRu: '',
       image: undefined,
       existingImage: '',
       slug: '',
@@ -145,6 +160,15 @@ export function CategoriesView() {
 
       const formDataToSend = new FormData();
       formDataToSend.append('title', formData.title);
+
+      // Add multi-language fields
+      if (formData.titleAm) {
+        formDataToSend.append('titleAm', formData.titleAm);
+      }
+      if (formData.titleRu) {
+        formDataToSend.append('titleRu', formData.titleRu);
+      }
+
       if (formData.slug) {
         formDataToSend.append('slug', formData.slug);
       }
@@ -280,17 +304,86 @@ export function CategoriesView() {
         </Scrollbar>
       </Card>
 
-      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
+      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
         <DialogTitle>{editingCategory ? 'Edit Category' : 'Add New Category'}</DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 3 }}>
-            <TextField
-              fullWidth
-              label="Title"
-              value={formData.title}
-              onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
-              required
-            />
+            {/* Language Tabs */}
+            <Box>
+              <Typography variant="subtitle2" sx={{ mb: 2 }}>
+                Category Title
+              </Typography>
+              <Tabs
+                value={activeLanguageTab}
+                onChange={(_, newValue) => setActiveLanguageTab(newValue)}
+                sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}
+              >
+                <Tab
+                  label={
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <span>🇬🇧</span>
+                      <span>English</span>
+                    </Box>
+                  }
+                  value="en"
+                />
+                <Tab
+                  label={
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <span>🇦🇲</span>
+                      <span>Armenian</span>
+                    </Box>
+                  }
+                  value="am"
+                />
+                <Tab
+                  label={
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <span>🇷🇺</span>
+                      <span>Russian</span>
+                    </Box>
+                  }
+                  value="ru"
+                />
+              </Tabs>
+
+              {/* English Fields */}
+              {activeLanguageTab === 'en' && (
+                <TextField
+                  fullWidth
+                  label="Title (English)"
+                  value={formData.title}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
+                  required
+                  placeholder="Enter category title in English"
+                />
+              )}
+
+              {/* Armenian Fields */}
+              {activeLanguageTab === 'am' && (
+                <TextField
+                  fullWidth
+                  label="Անվանում (Armenian)"
+                  value={formData.titleAm}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, titleAm: e.target.value }))}
+                  placeholder="Մուտքագրեք կատեգորիայի անվանումը հայերեն"
+                  helperText="Optional - Leave empty if not needed"
+                />
+              )}
+
+              {/* Russian Fields */}
+              {activeLanguageTab === 'ru' && (
+                <TextField
+                  fullWidth
+                  label="Название (Russian)"
+                  value={formData.titleRu}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, titleRu: e.target.value }))}
+                  placeholder="Введите название категории на русском языке"
+                  helperText="Optional - Leave empty if not needed"
+                />
+              )}
+            </Box>
+
             <TextField
               fullWidth
               label="Slug"

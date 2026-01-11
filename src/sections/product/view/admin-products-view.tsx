@@ -3,7 +3,9 @@ import type { Product, Category, Subcategory } from 'src/services/api';
 import { useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
+import Tab from '@mui/material/Tab';
 import Grid from '@mui/material/Grid';
+import Tabs from '@mui/material/Tabs';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
@@ -38,6 +40,10 @@ import { ProductItem } from '../product-item';
 interface ProductFormData {
   title: string;
   description: string;
+  titleAm: string;
+  descriptionAm: string;
+  titleRu: string;
+  descriptionRu: string;
   price: number;
   stock: number;
   categoryId: string;
@@ -77,6 +83,10 @@ export function AdminProductsView() {
   const [formData, setFormData] = useState<ProductFormData>({
     title: '',
     description: '',
+    titleAm: '',
+    descriptionAm: '',
+    titleRu: '',
+    descriptionRu: '',
     price: 0,
     stock: 0,
     categoryId: '',
@@ -95,6 +105,7 @@ export function AdminProductsView() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [cropperOpen, setCropperOpen] = useState(false);
   const [imageToProcess, setImageToProcess] = useState<{ file: File; src: string } | null>(null);
+  const [activeLanguageTab, setActiveLanguageTab] = useState<'en' | 'am' | 'ru'>('en');
 
   const fetchProducts = useCallback(
     async (page?: number, limit?: number) => {
@@ -168,6 +179,10 @@ export function AdminProductsView() {
       setFormData({
         title: product.title,
         description: product.description || '',
+        titleAm: (product as any).titleAm || '',
+        descriptionAm: (product as any).descriptionAm || '',
+        titleRu: (product as any).titleRu || '',
+        descriptionRu: (product as any).descriptionRu || '',
         price: product.price,
         stock: product.stock,
         categoryId: product.categoryId,
@@ -186,6 +201,10 @@ export function AdminProductsView() {
       setFormData({
         title: '',
         description: '',
+        titleAm: '',
+        descriptionAm: '',
+        titleRu: '',
+        descriptionRu: '',
         price: 0,
         stock: 0,
         categoryId: '',
@@ -200,6 +219,7 @@ export function AdminProductsView() {
         imagesToRemove: [],
       });
     }
+    setActiveLanguageTab('en');
     setOpenDialog(true);
   };
 
@@ -233,9 +253,14 @@ export function AdminProductsView() {
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setEditingProduct(null);
+    setActiveLanguageTab('en');
     setFormData({
       title: '',
       description: '',
+      titleAm: '',
+      descriptionAm: '',
+      titleRu: '',
+      descriptionRu: '',
       price: 0,
       stock: 0,
       categoryId: '',
@@ -316,6 +341,21 @@ export function AdminProductsView() {
       const formDataToSend = new FormData();
       formDataToSend.append('title', formData.title);
       formDataToSend.append('description', formData.description);
+
+      // Add multi-language fields
+      if (formData.titleAm) {
+        formDataToSend.append('titleAm', formData.titleAm);
+      }
+      if (formData.descriptionAm) {
+        formDataToSend.append('descriptionAm', formData.descriptionAm);
+      }
+      if (formData.titleRu) {
+        formDataToSend.append('titleRu', formData.titleRu);
+      }
+      if (formData.descriptionRu) {
+        formDataToSend.append('descriptionRu', formData.descriptionRu);
+      }
+
       formDataToSend.append('price', Math.max(0, formData.price).toString());
       formDataToSend.append('stock', Math.max(0, formData.stock).toString());
       formDataToSend.append('categoryId', formData.categoryId);
@@ -650,28 +690,129 @@ export function AdminProductsView() {
         </Box>
       )}
 
-      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
+      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
         <DialogTitle>{editingProduct ? 'Edit Product' : 'Add New Product'}</DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 3 }}>
-            <TextField
-              fullWidth
-              label="Title"
-              value={formData.title}
-              onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
-              required
-            />
-
+            {/* Language Tabs */}
             <Box>
-              <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                Description *
+              <Typography variant="subtitle2" sx={{ mb: 2 }}>
+                Product Information
               </Typography>
-              <RichTextEditor
-                value={formData.description}
-                onChange={(value) => setFormData((prev) => ({ ...prev, description: value }))}
-                placeholder="Enter product description..."
-                helperText="Use the toolbar above to format your description"
-              />
+              <Tabs
+                value={activeLanguageTab}
+                onChange={(_, newValue) => setActiveLanguageTab(newValue)}
+                sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}
+              >
+                <Tab
+                  label={
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <span>🇬🇧</span>
+                      <span>English</span>
+                    </Box>
+                  }
+                  value="en"
+                />
+                <Tab
+                  label={
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <span>🇦🇲</span>
+                      <span>Armenian</span>
+                    </Box>
+                  }
+                  value="am"
+                />
+                <Tab
+                  label={
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <span>🇷🇺</span>
+                      <span>Russian</span>
+                    </Box>
+                  }
+                  value="ru"
+                />
+              </Tabs>
+
+              {/* English Fields */}
+              {activeLanguageTab === 'en' && (
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  <TextField
+                    fullWidth
+                    label="Title (English)"
+                    value={formData.title}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
+                    required
+                    placeholder="Enter product title in English"
+                  />
+                  <Box>
+                    <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                      Description (English) *
+                    </Typography>
+                    <RichTextEditor
+                      value={formData.description}
+                      onChange={(value) =>
+                        setFormData((prev) => ({ ...prev, description: value }))
+                      }
+                      placeholder="Enter product description in English..."
+                      helperText="Use the toolbar above to format your description"
+                    />
+                  </Box>
+                </Box>
+              )}
+
+              {/* Armenian Fields */}
+              {activeLanguageTab === 'am' && (
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  <TextField
+                    fullWidth
+                    label="Անվանում (Armenian)"
+                    value={formData.titleAm}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, titleAm: e.target.value }))}
+                    placeholder="Մուտքագրեք ապրանքի անվանումը հայերեն"
+                    helperText="Optional - Leave empty if not needed"
+                  />
+                  <Box>
+                    <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                      Նկարագրություն (Armenian)
+                    </Typography>
+                    <RichTextEditor
+                      value={formData.descriptionAm}
+                      onChange={(value) =>
+                        setFormData((prev) => ({ ...prev, descriptionAm: value }))
+                      }
+                      placeholder="Մուտքագրեք ապրանքի նկարագրությունը հայերեն..."
+                      helperText="Optional - Use the toolbar above to format your description"
+                    />
+                  </Box>
+                </Box>
+              )}
+
+              {/* Russian Fields */}
+              {activeLanguageTab === 'ru' && (
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  <TextField
+                    fullWidth
+                    label="Название (Russian)"
+                    value={formData.titleRu}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, titleRu: e.target.value }))}
+                    placeholder="Введите название продукта на русском языке"
+                    helperText="Optional - Leave empty if not needed"
+                  />
+                  <Box>
+                    <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                      Описание (Russian)
+                    </Typography>
+                    <RichTextEditor
+                      value={formData.descriptionRu}
+                      onChange={(value) =>
+                        setFormData((prev) => ({ ...prev, descriptionRu: value }))
+                      }
+                      placeholder="Введите описание продукта на русском языке..."
+                      helperText="Optional - Use the toolbar above to format your description"
+                    />
+                  </Box>
+                </Box>
+              )}
             </Box>
 
             <Box sx={{ display: 'flex', gap: 2 }}>
