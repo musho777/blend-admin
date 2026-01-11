@@ -23,6 +23,8 @@ import {
   TableContainer,
   FormControlLabel,
   CircularProgress,
+  Tabs,
+  Tab,
 } from '@mui/material';
 
 import { apiService } from '../../../services/api';
@@ -43,6 +45,8 @@ export function BannersView() {
     image: null,
     url: '',
     text: '',
+    textAm: '',
+    textRu: '',
     priority: 1,
     isActive: true,
   });
@@ -51,6 +55,7 @@ export function BannersView() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [activeLanguageTab, setActiveLanguageTab] = useState<'en' | 'am' | 'ru'>('en');
 
   // Fetch banners on component mount
   useEffect(() => {
@@ -78,6 +83,8 @@ export function BannersView() {
       image: null,
       url: '',
       text: '',
+      textAm: '',
+      textRu: '',
       priority: 1,
       isActive: true,
     });
@@ -92,6 +99,8 @@ export function BannersView() {
       image: null,
       url: '',
       text: '',
+      textAm: '',
+      textRu: '',
       priority: 1,
       isActive: true,
     });
@@ -105,6 +114,8 @@ export function BannersView() {
       image: null,
       url: banner.url,
       text: banner.text || '',
+      textAm: banner.textAm || '',
+      textRu: banner.textRu || '',
       priority: banner.priority || 1,
       isActive: banner.isActive ?? true,
     });
@@ -139,6 +150,12 @@ export function BannersView() {
       }
       formDataToSend.append('url', formData.url);
       formDataToSend.append('text', formData.text);
+      if (formData.textAm) {
+        formDataToSend.append('textAm', formData.textAm);
+      }
+      if (formData.textRu) {
+        formDataToSend.append('textRu', formData.textRu);
+      }
       formDataToSend.append('priority', formData.priority.toString());
       formDataToSend.append('isActive', formData.isActive.toString());
 
@@ -411,16 +428,86 @@ export function BannersView() {
               placeholder="https://example.com or /products"
             />
 
-            {/* Text Field */}
-            <TextField
-              fullWidth
-              label="Banner Text"
-              value={formData.text}
-              onChange={(e) => setFormData((prev) => ({ ...prev, text: e.target.value }))}
-              placeholder="Optional promotional text"
-              multiline
-              rows={2}
-            />
+            {/* Text Field with Language Tabs */}
+            <Box>
+              <Typography variant="subtitle2" sx={{ mb: 2 }}>
+                Banner Text
+              </Typography>
+              <Tabs
+                value={activeLanguageTab}
+                onChange={(_, newValue) => setActiveLanguageTab(newValue)}
+                sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}
+              >
+                <Tab
+                  label={
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <span>🇬🇧</span>
+                      <span>English</span>
+                    </Box>
+                  }
+                  value="en"
+                />
+                <Tab
+                  label={
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <span>🇦🇲</span>
+                      <span>Armenian</span>
+                    </Box>
+                  }
+                  value="am"
+                />
+                <Tab
+                  label={
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <span>🇷🇺</span>
+                      <span>Russian</span>
+                    </Box>
+                  }
+                  value="ru"
+                />
+              </Tabs>
+
+              {/* English Field */}
+              {activeLanguageTab === 'en' && (
+                <TextField
+                  fullWidth
+                  label="Banner Text (English)"
+                  value={formData.text}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, text: e.target.value }))}
+                  placeholder="Optional promotional text in English"
+                  multiline
+                  rows={2}
+                />
+              )}
+
+              {/* Armenian Field */}
+              {activeLanguageTab === 'am' && (
+                <TextField
+                  fullWidth
+                  label="Տեքստ (Armenian)"
+                  value={formData.textAm}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, textAm: e.target.value }))}
+                  placeholder="Գովազդային տեքստ հայերեն"
+                  helperText="Optional - Leave empty if not needed"
+                  multiline
+                  rows={2}
+                />
+              )}
+
+              {/* Russian Field */}
+              {activeLanguageTab === 'ru' && (
+                <TextField
+                  fullWidth
+                  label="Текст (Russian)"
+                  value={formData.textRu}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, textRu: e.target.value }))}
+                  placeholder="Рекламный текст на русском языке"
+                  helperText="Optional - Leave empty if not needed"
+                  multiline
+                  rows={2}
+                />
+              )}
+            </Box>
 
             {/* Priority Field */}
             <TextField
