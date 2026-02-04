@@ -750,9 +750,7 @@ export function AdminProductsView() {
                     </Typography>
                     <RichTextEditor
                       value={formData.description}
-                      onChange={(value) =>
-                        setFormData((prev) => ({ ...prev, description: value }))
-                      }
+                      onChange={(value) => setFormData((prev) => ({ ...prev, description: value }))}
                       placeholder="Enter product description in English..."
                       helperText="Use the toolbar above to format your description"
                     />
@@ -822,7 +820,7 @@ export function AdminProductsView() {
                 type="number"
                 value={formData.price}
                 onChange={(e) => {
-                  const value = parseFloat(e.target.value) || 0;
+                  const value = parseFloat(e.target.value);
                   setFormData((prev) => ({ ...prev, price: Math.max(0, value) }));
                 }}
                 required
@@ -836,7 +834,7 @@ export function AdminProductsView() {
                 type="number"
                 value={formData.stock}
                 onChange={(e) => {
-                  const value = parseInt(e.target.value, 10) || 0;
+                  const value = parseInt(e.target.value, 10);
                   setFormData((prev) => ({ ...prev, stock: Math.max(0, value) }));
                 }}
                 required
@@ -944,7 +942,7 @@ export function AdminProductsView() {
               type="number"
               value={formData.priority}
               onChange={(e) => {
-                const value = parseInt(e.target.value, 10) || 0;
+                const value = parseInt(e.target.value, 10);
                 setFormData((prev) => ({ ...prev, priority: Math.max(0, value) }));
               }}
               helperText="Higher priority products appear first (0 = no priority)"
