@@ -1,5 +1,6 @@
 import type { Product, Category, Subcategory } from 'src/services/api';
 
+import { useDebounce } from 'minimal-shared/hooks';
 import { useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
@@ -23,6 +24,8 @@ import FormControl from '@mui/material/FormControl';
 import ToggleButton from '@mui/material/ToggleButton';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
+import OutlinedInput from '@mui/material/OutlinedInput';
+import InputAdornment from '@mui/material/InputAdornment';
 import CircularProgress from '@mui/material/CircularProgress';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
@@ -106,16 +109,20 @@ export function AdminProductsView() {
   const [cropperOpen, setCropperOpen] = useState(false);
   const [imageToProcess, setImageToProcess] = useState<{ file: File; src: string } | null>(null);
   const [activeLanguageTab, setActiveLanguageTab] = useState<'en' | 'am' | 'ru'>('en');
+  const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
   const fetchProducts = useCallback(
-    async (page?: number, limit?: number) => {
+    async (page?: number, limit?: number, search?: string) => {
       try {
         setLoading(true);
         const pageToUse = page ?? currentPage;
         const limitToUse = limit ?? itemsPerPage;
+        const searchToUse = search ?? debouncedSearchQuery;
         const productsResponse = await apiService.getProducts({
           page: pageToUse,
           limit: limitToUse,
+          search: searchToUse || undefined,
         });
         setProducts(productsResponse.data || []);
         setPaginationMeta(productsResponse.meta);
@@ -128,7 +135,7 @@ export function AdminProductsView() {
         setLoading(false);
       }
     },
-    [currentPage, itemsPerPage]
+    [currentPage, itemsPerPage, debouncedSearchQuery]
   );
 
   const fetchCategories = useCallback(async () => {
@@ -461,6 +468,12 @@ export function AdminProductsView() {
     fetchProducts();
   }, [currentPage, itemsPerPage, fetchProducts]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+    fetchProducts(1, itemsPerPage, debouncedSearchQuery);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearchQuery]);
+
   const tableColumns: TableColumn[] = [
     {
       key: 'title',
@@ -555,6 +568,36 @@ export function AdminProductsView() {
         </Box>
       </Box>
 
+      {/* Search Input */}
+      <Box sx={{ mb: 3 }}>
+        <OutlinedInput
+          fullWidth
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search products by title (English, Armenian, Russian)..."
+          startAdornment={
+            <InputAdornment position="start">
+              <Iconify width={20} icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
+            </InputAdornment>
+          }
+          endAdornment={
+            searchQuery && (
+              <InputAdornment position="end">
+                <IconButton
+                  onClick={() => setSearchQuery('')}
+                  edge="end"
+                  size="small"
+                  aria-label="clear search"
+                >
+                  <Iconify icon="mingcute:close-line" width={20} />
+                </IconButton>
+              </InputAdornment>
+            )
+          }
+          sx={{ maxWidth: 600 }}
+        />
+      </Box>
+
       {error && (
         <Alert severity="error" sx={{ mb: 3 }}>
           {error}
@@ -567,7 +610,9 @@ export function AdminProductsView() {
             columns={tableColumns}
             data={products}
             loading={loading}
-            emptyMessage="No products found"
+            emptyMessage={
+              searchQuery ? `No products found for "${searchQuery}"` : 'No products found'
+            }
             minWidth={1200}
           />
           {/* Pagination for table view */}
@@ -638,8 +683,22 @@ export function AdminProductsView() {
                   color: 'text.secondary',
                 }}
               >
-                <Typography variant="h6">No products found</Typography>
-                <Typography variant="body2">Start by adding your first product</Typography>
+                {searchQuery ? (
+                  <>
+                    <Typography variant="h6">No products found</Typography>
+                    <Typography variant="body2">
+                      No results for &quot;{searchQuery}&quot;. Try a different search term.
+                    </Typography>
+                    <Button variant="outlined" onClick={() => setSearchQuery('')} sx={{ mt: 2 }}>
+                      Clear Search
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Typography variant="h6">No products found</Typography>
+                    <Typography variant="body2">Start by adding your first product</Typography>
+                  </>
+                )}
               </Box>
             </Grid>
           ) : (
