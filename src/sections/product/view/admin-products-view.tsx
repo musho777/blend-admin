@@ -31,7 +31,7 @@ import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
 import { apiService } from 'src/services/api';
 
 import { Iconify } from 'src/components/iconify';
-import { ImageCropper } from 'src/components/image-cropper';
+import { ImageResizer } from 'src/components/image-cropper';
 import { RichTextEditor } from 'src/components/rich-text-editor';
 import { DataTable, type TableColumn } from 'src/components/table';
 
@@ -1165,10 +1165,10 @@ export function AdminProductsView() {
       </Popover>
 
       {imageToProcess && (
-        <ImageCropper
+        <ImageResizer
           open={cropperOpen}
           onClose={handleCropperClose}
-          onCropComplete={handleCropComplete}
+          onResizeComplete={handleCropComplete}
           imageSrc={imageToProcess.src}
           fileName={imageToProcess.file.name}
         />
