@@ -200,7 +200,7 @@ class ApiService {
   }
 
   // Products
-  async getProducts(params?: { page?: number; limit?: number }): Promise<{
+  async getProducts(params?: { page?: number; limit?: number; search?: string }): Promise<{
     data: Product[];
     meta: {
       hasNext: boolean;
@@ -214,6 +214,7 @@ class ApiService {
     const searchParams = new URLSearchParams();
     if (params?.page) searchParams.append('page', params.page.toString());
     if (params?.limit) searchParams.append('limit', params.limit.toString());
+    if (params?.search) searchParams.append('search', params.search);
 
     const query = searchParams.toString();
     const endpoint = `/products${query ? `?${query}` : ''}`;
