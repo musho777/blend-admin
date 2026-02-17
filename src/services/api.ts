@@ -32,12 +32,14 @@ export interface Category {
   title: string;
   slug?: string;
   image: string;
+  orderIndex?: number;
 }
 
 export interface Subcategory {
   id: string;
   title: string;
   categoryId: string;
+  orderIndex?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -386,7 +388,7 @@ class ApiService {
     return this.request<Subcategory[]>(`/categories/${categoryId}/subcategories`);
   }
 
-  async createSubcategory(data: { title: string; categoryId: string }): Promise<Subcategory> {
+  async createSubcategory(data: { title: string; categoryId: string; orderIndex?: number }): Promise<Subcategory> {
     return this.request<Subcategory>('/subcategories', {
       method: 'POST',
       body: JSON.stringify(data),
@@ -395,7 +397,7 @@ class ApiService {
 
   async updateSubcategory(
     id: string,
-    data: { title?: string; categoryId?: string }
+    data: { title?: string; categoryId?: string; orderIndex?: number }
   ): Promise<Subcategory> {
     return this.request<Subcategory>(`/subcategories/${id}`, {
       method: 'PUT',
