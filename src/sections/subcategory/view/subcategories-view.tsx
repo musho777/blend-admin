@@ -39,6 +39,7 @@ interface SubcategoryFormData {
   titleAm: string;
   titleRu: string;
   categoryId: string;
+  orderIndex?: number;
 }
 
 export function SubcategoriesView() {
@@ -53,6 +54,7 @@ export function SubcategoriesView() {
     titleAm: '',
     titleRu: '',
     categoryId: '',
+    orderIndex: undefined,
   });
   const [submitting, setSubmitting] = useState(false);
   const [activeLanguageTab, setActiveLanguageTab] = useState<'en' | 'am' | 'ru'>('en');
@@ -92,6 +94,7 @@ export function SubcategoriesView() {
         titleAm: (subcategory as any).titleAm || '',
         titleRu: (subcategory as any).titleRu || '',
         categoryId: subcategory.categoryId,
+        orderIndex: subcategory.orderIndex,
       });
     } else {
       setEditingSubcategory(null);
@@ -100,6 +103,7 @@ export function SubcategoriesView() {
         titleAm: '',
         titleRu: '',
         categoryId: '',
+        orderIndex: undefined,
       });
     }
     setActiveLanguageTab('en');
@@ -115,6 +119,7 @@ export function SubcategoriesView() {
       titleAm: '',
       titleRu: '',
       categoryId: '',
+      orderIndex: undefined,
     });
   };
 
@@ -125,6 +130,7 @@ export function SubcategoriesView() {
       const dataToSend: any = {
         title: formData.title,
         categoryId: formData.categoryId,
+        orderIndex: Math.max(0, formData.orderIndex || 0),
       };
 
       // Add multi-language fields if they have values
@@ -207,6 +213,7 @@ export function SubcategoriesView() {
                 <TableRow>
                   <TableCell>Title</TableCell>
                   <TableCell>Category</TableCell>
+                  <TableCell>Order Index</TableCell>
                   <TableCell>Created Date</TableCell>
                   <TableCell align="right">Actions</TableCell>
                 </TableRow>
@@ -214,13 +221,13 @@ export function SubcategoriesView() {
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={4} align="center">
+                    <TableCell colSpan={5} align="center">
                       <CircularProgress />
                     </TableCell>
                   </TableRow>
                 ) : subcategories.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} align="center">
+                    <TableCell colSpan={5} align="center">
                       No subcategories found
                     </TableCell>
                   </TableRow>
@@ -233,6 +240,11 @@ export function SubcategoriesView() {
                       <TableCell>
                         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                           {getCategoryName(subcategory.categoryId)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                          {subcategory.orderIndex ?? 0}
                         </Typography>
                       </TableCell>
                       <TableCell>
@@ -354,6 +366,16 @@ export function SubcategoriesView() {
                 ))}
               </Select>
             </FormControl>
+
+            <TextField
+              fullWidth
+              type="number"
+              label="Order Index"
+              value={formData.orderIndex ?? ''}
+              onChange={(e) => setFormData((prev) => ({ ...prev, orderIndex: e.target.value ? Number(e.target.value) : undefined }))}
+              helperText="Higher order index subcategories appear first (0 = no priority)"
+              inputProps={{ min: 0 }}
+            />
           </Box>
         </DialogContent>
         <DialogActions>

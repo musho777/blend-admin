@@ -38,6 +38,7 @@ interface CategoryFormData {
   image?: File;
   existingImage?: string;
   slug?: string;
+  orderIndex?: number;
 }
 
 export function CategoriesView() {
@@ -53,6 +54,7 @@ export function CategoriesView() {
     image: undefined,
     existingImage: '',
     slug: '',
+    orderIndex: undefined,
   });
   const [submitting, setSubmitting] = useState(false);
   const [cropperOpen, setCropperOpen] = useState(false);
@@ -86,6 +88,7 @@ export function CategoriesView() {
         image: undefined,
         existingImage: category.image,
         slug: category.slug || '',
+        orderIndex: category.orderIndex,
       });
     } else {
       setEditingCategory(null);
@@ -96,6 +99,7 @@ export function CategoriesView() {
         image: undefined,
         existingImage: '',
         slug: '',
+        orderIndex: undefined,
       });
     }
     setActiveLanguageTab('en');
@@ -113,6 +117,7 @@ export function CategoriesView() {
       image: undefined,
       existingImage: '',
       slug: '',
+      orderIndex: undefined,
     });
     if (imageToProcess) {
       URL.revokeObjectURL(imageToProcess.src);
@@ -172,6 +177,8 @@ export function CategoriesView() {
       if (formData.slug) {
         formDataToSend.append('slug', formData.slug);
       }
+
+      formDataToSend.append('orderIndex', Math.max(0, formData.orderIndex || 0).toString());
 
       if (formData.image) {
         formDataToSend.append('image', formData.image);
@@ -233,6 +240,7 @@ export function CategoriesView() {
                 <TableRow>
                   <TableCell>Title</TableCell>
                   <TableCell>Slug</TableCell>
+                  <TableCell>Order Index</TableCell>
                   <TableCell>Image</TableCell>
                   <TableCell align="right">Actions</TableCell>
                 </TableRow>
@@ -240,13 +248,13 @@ export function CategoriesView() {
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={4} align="center">
+                    <TableCell colSpan={5} align="center">
                       <CircularProgress />
                     </TableCell>
                   </TableRow>
                 ) : categories.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} align="center">
+                    <TableCell colSpan={5} align="center">
                       No categories found
                     </TableCell>
                   </TableRow>
@@ -259,6 +267,11 @@ export function CategoriesView() {
                       <TableCell>
                         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                           {category.slug || '-'}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                          {category.orderIndex ?? 0}
                         </Typography>
                       </TableCell>
                       <TableCell>
@@ -390,6 +403,16 @@ export function CategoriesView() {
               value={formData.slug}
               onChange={(e) => setFormData((prev) => ({ ...prev, slug: e.target.value }))}
               helperText="URL-friendly version of title (optional)"
+            />
+
+            <TextField
+              fullWidth
+              type="number"
+              label="Order Index"
+              value={formData.orderIndex ?? ''}
+              onChange={(e) => setFormData((prev) => ({ ...prev, orderIndex: e.target.value ? Number(e.target.value) : undefined }))}
+              helperText="Higher order index categories appear first (0 = no priority)"
+              inputProps={{ min: 0 }}
             />
 
             <Box>
