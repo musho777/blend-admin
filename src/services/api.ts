@@ -451,6 +451,40 @@ class ApiService {
     });
   }
 
+  async exportOrdersToExcel(): Promise<void> {
+    const url = `${API_BASE_URL}/orders/export/excel`;
+
+    const headers: HeadersInit = {};
+
+    if (this.token) {
+      (headers as Record<string, string>).Authorization = `Bearer ${this.token}`;
+    }
+
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = `orders_${new Date().toISOString().split('T')[0]}.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (error) {
+      console.error('API request failed:', error);
+      throw error;
+    }
+  }
+
   async getDashboardStats(): Promise<DashboardStats> {
     return this.request<DashboardStats>('/orders/statistics/dashboard');
   }
