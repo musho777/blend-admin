@@ -131,13 +131,7 @@ export function OrdersView() {
           color="success"
           onClick={handleExportToExcel}
           disabled={exportingExcel}
-          startIcon={
-            exportingExcel ? (
-              <CircularProgress size={20} color="inherit" />
-            ) : (
-              <Iconify icon="vscode-icons:file-type-excel" />
-            )
-          }
+          startIcon={exportingExcel && <CircularProgress size={20} color="inherit" />}
         >
           {exportingExcel ? 'Exporting...' : 'Export to Excel'}
         </Button>
