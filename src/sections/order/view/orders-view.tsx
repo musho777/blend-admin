@@ -48,6 +48,7 @@ export function OrdersView() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [exportingExcel, setExportingExcel] = useState(false);
 
   const fetchOrders = useCallback(async () => {
     try {
@@ -107,12 +108,39 @@ export function OrdersView() {
     }
   };
 
+  const handleExportToExcel = async () => {
+    try {
+      setExportingExcel(true);
+      await apiService.exportOrdersToExcel();
+      setError('');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to export orders');
+    } finally {
+      setExportingExcel(false);
+    }
+  };
+
   return (
     <Box sx={{ p: '0 20px' }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 5 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 5, gap: 2 }}>
         <Typography variant="h4" flexGrow={1}>
           Orders
         </Typography>
+        <Button
+          variant="contained"
+          color="success"
+          onClick={handleExportToExcel}
+          disabled={exportingExcel}
+          startIcon={
+            exportingExcel ? (
+              <CircularProgress size={20} color="inherit" />
+            ) : (
+              <Iconify icon="vscode-icons:file-type-excel" />
+            )
+          }
+        >
+          {exportingExcel ? 'Exporting...' : 'Export to Excel'}
+        </Button>
         <FormControl size="small" sx={{ minWidth: 150 }}>
           <InputLabel>Status Filter</InputLabel>
           <Select
